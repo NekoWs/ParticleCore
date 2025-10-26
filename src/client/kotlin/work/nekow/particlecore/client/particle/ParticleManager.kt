@@ -448,9 +448,8 @@ class ParticleManager {
          *
          * @param id ID
          * @param vector 向量
-         * @param plus 是否为相加
          */
-        fun velocityParticle(id: Long, vector: Vec3d, plus: Boolean = false) {
+        fun velocityParticle(id: Long, vector: Vec3d) {
             val particles = ids[id] ?: return
             for (p in particles) {
 
