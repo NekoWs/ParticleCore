@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "particlecore",
+  "version": "${version}",
+  "name": "ParticleCore",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "unlicense",
+  "icon": "assets/particlecore/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "work.nekow.particlecore.client.ParticlecoreClient"
+    ],
+    "main": [
+      "work.nekow.particlecore.Particlecore"
+    ]
+  },
+  "mixins": [
+    "particlecore.mixins.json",
+    {
+      "config": "particlecore.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
