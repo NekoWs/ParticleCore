@@ -452,7 +452,6 @@ class ParticleManager {
         fun velocityParticle(id: Long, vector: Vec3d) {
             val particles = ids[id] ?: return
             for (p in particles) {
-
                 p.setVelocity(vector.x, vector.y, vector.z)
             }
         }

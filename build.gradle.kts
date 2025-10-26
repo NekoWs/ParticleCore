@@ -52,7 +52,7 @@ dependencies {
 
     modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
 
-    implementation("com.ezylang:EvalEx:3.5.0")
+    modImplementation("com.ezylang:EvalEx:3.5.0")
     include("com.ezylang:EvalEx:3.5.0")
 }
 
