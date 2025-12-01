@@ -9,6 +9,8 @@ data class Point3D(
     val y: Double,
     val z: Double,
 ) {
+    constructor(vec3d: Vec3d) : this(vec3d.x, vec3d.y, vec3d.z)
+
     operator fun plus(p: Point3D) =
         Point3D(x + p.x, y + p.y, z + p.z)
 
