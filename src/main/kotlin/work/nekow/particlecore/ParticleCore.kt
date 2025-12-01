@@ -32,7 +32,7 @@ class Particlecore : ModInitializer {
  * @return 获取到的 Vec3d
  * @throws Exception 获取失败
  */
-fun NbtCompound.getVec3d(key: String, defaultValue: Vec3d = Vec3d.ZERO): Vec3d {
+internal fun NbtCompound.getVec3d(key: String, defaultValue: Vec3d = Vec3d.ZERO): Vec3d {
     return this.getListOrEmpty(key).let {
         if (it.isEmpty) return defaultValue
 

@@ -9,7 +9,7 @@ import java.math.BigDecimal
 
 class FunctionPoints(
     val function: String,
-    var range: Pair<Double, Double>,
+    val range: Pair<Double, Double>,
     val step: Double,
 ) {
     val exps: List<Pair<Expression?, List<Pair<String, Expression>>>> by lazy {
@@ -18,10 +18,6 @@ class FunctionPoints(
     val points = mutableListOf<Vec3d>()
 
     init {
-        // 修复如果 First 大于 Second 时不会执行的问题
-        if (range.first > range.second) {
-            range = Pair(range.second, range.first)
-        }
         val data = FunctionData(function, step, range)
         caches[data]?.let {
             points.addAll(it)
