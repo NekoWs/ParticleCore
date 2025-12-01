@@ -37,107 +37,9 @@ class DrawingEngine3D {
     fun drawBSplineCurve(controlPoints: List<Point3D>): List<Point3D> =
         DrawingAlgorithms3D.bSplineCurve3D(controlPoints, stepSize = precision)
 
-    fun fillGroup(
-        group: PointGroup,
-        method: FillMethod3D = FillMethod3D.FACE_BY_FACE,
-        density: Double? = null
-    ): List<Point3D> {
-        val fillDensity = density ?: (precision * 2)
-
-        return when (method) {
-            FillMethod3D.FACE_BY_FACE -> {
-                // 对于立方体这样的多面体，使用面填充
-                if (isCubeLike(group)) {
-                    FillAlgorithms3D.fillCubeFaces(group, fillDensity)
-                } else {
-                    FillAlgorithms3D.fillByFaces(group, fillDensity)
-                }
-            }
-
-            FillMethod3D.VOXEL -> {
-                FillAlgorithms3D.voxelFill(group, fillDensity)
-            }
-
-            FillMethod3D.CONTOUR -> {
-                FillAlgorithms3D.contourFill(group, fillDensity)
-            }
-        }
-    }
-
-    // 检查是否是立方体类形状
-    private fun isCubeLike(group: PointGroup): Boolean {
-        // 简单检查：顶点数量为8，连接数量为12
-        return group.points.size == 8 && group.connections.size == 12
-    }
-
-    // 为立方体创建填充点
-    fun fillCube(cube: PointGroup, density: Double? = null): List<Point3D> {
-        val fillDensity = density ?: (precision * 2)
-        return FillAlgorithms3D.fillCubeFaces(cube, fillDensity)
-    }
-
-    // 轮廓填充方法
-    private fun contourFill(group: PointGroup, density: Double): List<Point3D> {
-        if (!group.isClosed || group.points.isEmpty()) return emptyList()
-
-        val (minPoint, maxPoint) = group.boundingBox()
-
-        val points = mutableListOf<Point3D>()
-
-        // 根据密度决定轮廓层数
-        val contourSpacing = density * 2
-        val numContours = max(1, ((maxPoint.z - minPoint.z) / contourSpacing).toInt())
-
-        // 在多个高度上生成轮廓
-        for (contourIndex in 0..numContours) {
-            val height = minPoint.z + (maxPoint.z - minPoint.z) * contourIndex / numContours
-            val contourPoints = generateContourAtHeight(group, height, density)
-            points.addAll(contourPoints)
-        }
-
-        return points
-    }
-
-    private fun generateContourAtHeight(
-        group: PointGroup,
-        height: Double,
-        tolerance: Double
-    ): List<Point3D> {
-        val contourPoints = mutableListOf<Point3D>()
-
-        // 找到与指定高度相交的连接
-        for (connection in group.connections) {
-            val intersectionPoints = FillAlgorithms3D.intersectionPoints(connection, height)
-
-            // 连接找到的交点
-            if (intersectionPoints.size >= 2) {
-                val sortedPoints = sortPointsAlongContour(intersectionPoints)
-                val interpolated = DrawingAlgorithms3D.interpolatePolyline(
-                    sortedPoints,
-                    tolerance,
-                    connection.isClosed
-                )
-                contourPoints.addAll(interpolated)
-            }
-        }
-
-        return contourPoints
-    }
-
-    private fun sortPointsAlongContour(points: List<Point3D>): List<Point3D> {
-        if (points.size <= 2) return points
-
-        // 简单的点排序：按角度排序（假设轮廓大致是凸的）
-        val center = points.reduce { acc, point -> acc + point } / points.size.toDouble()
-        return points.sortedBy { point ->
-            atan2(point.y - center.y, point.x - center.x)
-        }
-    }
-
     fun renderGroup(
         group: PointGroup,
         renderEdges: Boolean = true,
-        renderFill: Boolean = true,
         fillMethod: FillMethod3D = FillMethod3D.FACE_BY_FACE
     ): List<Point3D> {
         val points = mutableListOf<Point3D>()
@@ -150,11 +52,6 @@ class DrawingEngine3D {
                 )
                 points.addAll(connectionPoints)
             }
-        }
-
-        if (renderFill && group.isClosed) {
-            val fillPoints = fillGroup(group, fillMethod)
-            points.addAll(fillPoints)
         }
 
         // 去重
