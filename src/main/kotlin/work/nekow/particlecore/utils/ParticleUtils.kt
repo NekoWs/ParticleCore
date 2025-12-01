@@ -56,6 +56,12 @@ class ParticleUtils {
             }
         }
 
+        fun checkBuilder(builder: ParticleBuilder) {
+            if (builder.pos == Vec3d.ZERO) {
+                throw ParticleException("Particle pos is ZERO!")
+            }
+        }
+
         /**
          * 使用发包方式召唤粒子效果
          */
@@ -79,6 +85,7 @@ class ParticleUtils {
             step: Double = 1.0,
             delay: Double = 0.0
         ): Long {
+            checkBuilder(particle)
             val id = nextId(particle.age, delay)
             val packet = PacketLineParticlesS2C(
                 particle = particle,
@@ -109,6 +116,7 @@ class ParticleUtils {
             rotate: FPRotate,
             particleDelay: Int = 0
         ): Long {
+            checkBuilder(particle)
             val id = nextId(particle.age, delay)
             val packet = PacketFourierParticleS2C(
                 particle = particle,
@@ -136,6 +144,7 @@ class ParticleUtils {
             delay: Double = 0.0,
             range: Pair<Double, Double> = Pair(0.0, 10.0),
         ): Long {
+            checkBuilder(particle)
             val id = nextId(particle.age, delay)
             val packet = PacketFunctionParticlesS2C(
                 particle = particle,
