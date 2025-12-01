@@ -1,6 +1,9 @@
 package work.nekow.particlecore.canvas
 
-import work.nekow.particlecore.canvas.utils.*
+import work.nekow.particlecore.canvas.utils.Connection
+import work.nekow.particlecore.canvas.utils.ConnectionType
+import work.nekow.particlecore.canvas.utils.Point3D
+import work.nekow.particlecore.canvas.utils.PointGroup
 import kotlin.math.*
 
 @Suppress("unused")
@@ -39,8 +42,7 @@ class DrawingEngine3D {
 
     fun renderGroup(
         group: PointGroup,
-        renderEdges: Boolean = true,
-        fillMethod: FillMethod3D = FillMethod3D.FACE_BY_FACE
+        renderEdges: Boolean = true
     ): List<Point3D> {
         val points = mutableListOf<Point3D>()
 
