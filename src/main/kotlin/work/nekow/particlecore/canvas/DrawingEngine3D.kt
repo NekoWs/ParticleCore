@@ -1,12 +1,7 @@
 package work.nekow.particlecore.canvas
 
-import work.nekow.particlecore.canvas.utils.Connection
-import work.nekow.particlecore.canvas.utils.ConnectionType
-import work.nekow.particlecore.canvas.utils.FillMethod
-import work.nekow.particlecore.canvas.utils.Point3D
-import work.nekow.particlecore.canvas.utils.PointGroup
-import kotlin.math.abs
-import kotlin.math.max
+import work.nekow.particlecore.canvas.utils.*
+import kotlin.math.*
 
 class DrawingEngine3D {
     private val groups = mutableListOf<PointGroup>()
@@ -50,8 +45,13 @@ class DrawingEngine3D {
 
         return when (method) {
             FillMethod.TRIANGULATION -> {
-                val triangles = FillAlgorithms3D.triangulatePlanarPolygon(group.points)
-                FillAlgorithms3D.fillTriangles(triangles, fillDensity)
+                if (group.isPlanar()) {
+                    val triangles = FillAlgorithms3D.triangulatePlanarPolygon(group.points)
+                    FillAlgorithms3D.fillTriangles(triangles, fillDensity)
+                } else {
+                    // 对于非平面多边形，使用体素填充
+                    FillAlgorithms3D.voxelFill(group, fillDensity)
+                }
             }
 
             FillMethod.VOXEL -> {
@@ -73,39 +73,54 @@ class DrawingEngine3D {
         if (!group.isClosed || group.points.isEmpty()) return emptyList()
 
         val (minPoint, maxPoint) = group.boundingBox()
-        val center = group.center()
 
         val points = mutableListOf<Point3D>()
-        val numContours = max(1, ((maxPoint.z - minPoint.z) / density).toInt())
 
-        for (i in 0..numContours) {
-            val z = minPoint.z + (maxPoint.z - minPoint.z) * i / numContours
-            val contour = createContourAtHeight(group, z, density)
-            points.addAll(contour)
+        // 根据密度决定轮廓层数
+        val contourSpacing = density * 2
+        val numContours = max(1, ((maxPoint.z - minPoint.z) / contourSpacing).toInt())
+
+        // 在多个高度上生成轮廓
+        for (contourIndex in 0..numContours) {
+            val height = minPoint.z + (maxPoint.z - minPoint.z) * contourIndex / numContours
+            val contourPoints = generateContourAtHeight(group, height, density)
+            points.addAll(contourPoints)
         }
 
         return points
     }
 
-    private fun createContourAtHeight(
+    private fun generateContourAtHeight(
         group: PointGroup,
         height: Double,
-        density: Double
+        tolerance: Double
     ): List<Point3D> {
-        // 在指定高度创建轮廓
         val contourPoints = mutableListOf<Point3D>()
 
+        // 找到与指定高度相交的连接
         for (connection in group.connections) {
-            val pointsAtHeight = connection.points.mapNotNull { point ->
-                if (abs(point.z - height) < density) {
-                    Point3D(point.x, point.y, height)
-                } else null
+            val intersectionPoints = mutableListOf<Point3D>()
+
+            for (i in 0 until connection.points.size - 1) {
+                val p1 = connection.points[i]
+                val p2 = connection.points[i + 1]
+
+                // 检查线段是否与水平面相交
+                if ((p1.z - height) * (p2.z - height) <= 0) {
+                    // 计算交点
+                    val t = (height - p1.z) / (p2.z - p1.z)
+                    val x = p1.x + (p2.x - p1.x) * t
+                    val y = p1.y + (p2.y - p1.y) * t
+                    intersectionPoints.add(Point3D(x, y, height))
+                }
             }
 
-            if (pointsAtHeight.size >= 2) {
+            // 如果找到了交点，将它们连接起来
+            if (intersectionPoints.size >= 2) {
+                val sortedPoints = sortPointsAlongContour(intersectionPoints)
                 val interpolated = DrawingAlgorithms3D.interpolatePolyline(
-                    pointsAtHeight,
-                    density,
+                    sortedPoints,
+                    tolerance,
                     connection.isClosed
                 )
                 contourPoints.addAll(interpolated)
@@ -113,6 +128,16 @@ class DrawingEngine3D {
         }
 
         return contourPoints
+    }
+
+    private fun sortPointsAlongContour(points: List<Point3D>): List<Point3D> {
+        if (points.size <= 2) return points
+
+        // 简单的点排序：按角度排序（假设轮廓大致是凸的）
+        val center = points.reduce { acc, point -> acc + point } / points.size.toDouble()
+        return points.sortedBy { point ->
+            atan2(point.y - center.y, point.x - center.x)
+        }
     }
 
     fun renderGroup(
@@ -137,7 +162,15 @@ class DrawingEngine3D {
             points.addAll(fillPoints)
         }
 
-        return points.distinct() // 移除重复点
+        // 使用集合去重，避免重复点
+        return points.distinctBy { point ->
+            Triple(point.x.roundTo(precision), point.y.roundTo(precision), point.z.roundTo(precision))
+        }
+    }
+
+    private fun Double.roundTo(precision: Double): Double {
+        val factor = 1.0 / precision
+        return (this * factor).roundToInt() / factor
     }
 
     fun exportAllPoints(): List<Point3D> =
@@ -151,8 +184,7 @@ class DrawingEngine3D {
         // 创建简单几何体
         fun createCube(
             center: Point3D,
-            size: Double,
-            precision: Double
+            size: Double
         ): PointGroup {
             val half = size / 2
             val vertices = listOf(
@@ -180,6 +212,58 @@ class DrawingEngine3D {
             }
 
             return PointGroup(vertices, connections, isClosed = true)
+        }
+
+        // 几何体创建
+        fun createSphere(
+            center: Point3D,
+            radius: Double,
+            resolution: Double
+        ): PointGroup {
+            val points = mutableListOf<Point3D>()
+            val connections = mutableListOf<Connection>()
+
+            // 经度和纬度采样
+            val thetaSteps = max(10, (2 * PI * radius / resolution).toInt())
+            val phiSteps = max(10, (PI * radius / resolution).toInt())
+
+            // 生成顶点
+            for (i in 0..thetaSteps) {
+                val theta = 2 * PI * i / thetaSteps
+                for (j in 0..phiSteps) {
+                    val phi = PI * j / phiSteps
+
+                    val x = center.x + radius * sin(phi) * cos(theta)
+                    val y = center.y + radius * sin(phi) * sin(theta)
+                    val z = center.z + radius * cos(phi)
+
+                    points.add(Point3D(x, y, z))
+                }
+            }
+
+            // 创建连接（线框）
+            val numPointsPerRing = phiSteps + 1
+
+            // 经线连接
+            for (i in 0 until thetaSteps) {
+                for (j in 0 until phiSteps) {
+                    val current = i * numPointsPerRing + j
+                    val nextInRing = i * numPointsPerRing + (j + 1)
+                    val nextMeridian = ((i + 1) % thetaSteps) * numPointsPerRing + j
+
+                    connections.add(Connection(
+                        points = listOf(points[current], points[nextInRing]),
+                        type = ConnectionType.LINE
+                    ))
+
+                    connections.add(Connection(
+                        points = listOf(points[current], points[nextMeridian]),
+                        type = ConnectionType.LINE
+                    ))
+                }
+            }
+
+            return PointGroup(points, connections, isClosed = false)
         }
     }
 }
