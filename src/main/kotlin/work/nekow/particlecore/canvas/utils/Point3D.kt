@@ -9,6 +9,9 @@ data class Point3D(
     val y: Double,
     val z: Double,
 ) {
+    companion object {
+        val ZERO = Point3D(0.0, 0.0, 0.0)
+    }
     constructor(vec3d: Vec3d) : this(vec3d.x, vec3d.y, vec3d.z)
 
     operator fun plus(p: Point3D) =
