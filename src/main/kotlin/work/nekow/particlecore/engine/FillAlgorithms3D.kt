@@ -1,7 +1,7 @@
-package work.nekow.particlecore.canvas
+package work.nekow.particlecore.engine
 
-import work.nekow.particlecore.canvas.utils.Point3D
-import work.nekow.particlecore.canvas.utils.Triangle
+import work.nekow.particlecore.engine.utils.Point3D
+import work.nekow.particlecore.engine.utils.Triangle
 import kotlin.math.max
 import kotlin.random.Random
 

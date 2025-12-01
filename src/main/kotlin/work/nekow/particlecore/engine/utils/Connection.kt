@@ -1,4 +1,4 @@
-package work.nekow.particlecore.canvas.utils
+package work.nekow.particlecore.engine.utils
 
 data class Connection(
     val points: List<Point3D>,

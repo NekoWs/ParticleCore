@@ -1,4 +1,4 @@
-package work.nekow.particlecore.canvas.utils
+package work.nekow.particlecore.engine.utils
 
 import net.minecraft.util.math.Vec3d
 import kotlin.math.pow

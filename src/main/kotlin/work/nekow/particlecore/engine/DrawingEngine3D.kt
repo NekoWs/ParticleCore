@@ -1,9 +1,9 @@
-package work.nekow.particlecore.canvas
+package work.nekow.particlecore.engine
 
-import work.nekow.particlecore.canvas.utils.Connection
-import work.nekow.particlecore.canvas.utils.ConnectionType
-import work.nekow.particlecore.canvas.utils.Point3D
-import work.nekow.particlecore.canvas.utils.PointGroup
+import work.nekow.particlecore.engine.utils.Connection
+import work.nekow.particlecore.engine.utils.ConnectionType
+import work.nekow.particlecore.engine.utils.Point3D
+import work.nekow.particlecore.engine.utils.PointGroup
 import kotlin.math.*
 
 @Suppress("unused")

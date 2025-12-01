@@ -1,10 +1,10 @@
-package work.nekow.particlecore.canvas
+package work.nekow.particlecore.engine
 
-import work.nekow.particlecore.canvas.FillAlgorithms3D.Companion.fillTriangles
-import work.nekow.particlecore.canvas.FillAlgorithms3D.Companion.triangulatePlanarPolygon
-import work.nekow.particlecore.canvas.utils.Connection
-import work.nekow.particlecore.canvas.utils.ConnectionType
-import work.nekow.particlecore.canvas.utils.Point3D
+import work.nekow.particlecore.engine.FillAlgorithms3D.Companion.fillTriangles
+import work.nekow.particlecore.engine.FillAlgorithms3D.Companion.triangulatePlanarPolygon
+import work.nekow.particlecore.engine.utils.Connection
+import work.nekow.particlecore.engine.utils.ConnectionType
+import work.nekow.particlecore.engine.utils.Point3D
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.pow
