@@ -5,6 +5,7 @@ import net.minecraft.network.codec.PacketCodec
 import kotlin.math.max
 import kotlin.math.min
 
+@Suppress("unused")
 data class ParticleColor(
     val red: Float,
     val green: Float,

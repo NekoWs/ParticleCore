@@ -1,5 +1,6 @@
 package work.nekow.particlecore.utils
 
+@Suppress("unused")
 class Expressions(
     val expression: String = ""
 ) {

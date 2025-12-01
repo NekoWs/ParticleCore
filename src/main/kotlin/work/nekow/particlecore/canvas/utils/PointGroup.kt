@@ -2,6 +2,7 @@ package work.nekow.particlecore.canvas.utils
 
 import kotlin.math.abs
 
+@Suppress("unused")
 class PointGroup(
     val points: List<Point3D>,
     val connections: List<Connection> = emptyList(),

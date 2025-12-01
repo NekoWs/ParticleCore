@@ -4,6 +4,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 // 三角形数据结构
+@Suppress("unused")
 data class Triangle(val p1: Point3D, val p2: Point3D, val p3: Point3D) {
     fun normal(): Point3D = (p2 - p1).cross(p3 - p1).normalized()
 

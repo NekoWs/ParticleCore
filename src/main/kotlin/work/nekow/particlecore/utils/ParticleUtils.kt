@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.round
 
+@Suppress("unused")
 class ParticleUtils {
     companion object {
         private val indexes = ConcurrentHashMap<Long, Int>()

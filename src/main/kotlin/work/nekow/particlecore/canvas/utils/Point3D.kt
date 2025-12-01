@@ -4,6 +4,7 @@ import net.minecraft.util.math.Vec3d
 import kotlin.math.pow
 import kotlin.math.sqrt
 
+@Suppress("unused")
 data class Point3D(
     val x: Double,
     val y: Double,

@@ -3,6 +3,7 @@ package work.nekow.particlecore.canvas
 import work.nekow.particlecore.canvas.utils.*
 import kotlin.math.*
 
+@Suppress("unused")
 class DrawingEngine3D {
     private val groups = mutableListOf<PointGroup>()
     private var precision = 0.1
@@ -38,34 +39,41 @@ class DrawingEngine3D {
 
     fun fillGroup(
         group: PointGroup,
-        method: FillMethod = FillMethod.TRIANGULATION,
+        method: FillMethod3D = FillMethod3D.FACE_BY_FACE,
         density: Double? = null
     ): List<Point3D> {
         val fillDensity = density ?: (precision * 2)
 
         return when (method) {
-            FillMethod.TRIANGULATION -> {
-                if (group.isPlanar()) {
-                    val triangles = FillAlgorithms3D.triangulatePlanarPolygon(group.points)
-                    FillAlgorithms3D.fillTriangles(triangles, fillDensity)
+            FillMethod3D.FACE_BY_FACE -> {
+                // 对于立方体这样的多面体，使用面填充
+                if (isCubeLike(group)) {
+                    FillAlgorithms3D.fillCubeFaces(group, fillDensity)
                 } else {
-                    // 对于非平面多边形，使用体素填充
-                    FillAlgorithms3D.voxelFill(group, fillDensity)
+                    FillAlgorithms3D.fillByFaces(group, fillDensity)
                 }
             }
 
-            FillMethod.VOXEL -> {
+            FillMethod3D.VOXEL -> {
                 FillAlgorithms3D.voxelFill(group, fillDensity)
             }
 
-            FillMethod.SURFACE_SAMPLING -> {
-                FillAlgorithms3D.surfaceSampling(group.connections, fillDensity)
-            }
-
-            FillMethod.CONTOUR -> {
-                contourFill(group, fillDensity)
+            FillMethod3D.CONTOUR -> {
+                FillAlgorithms3D.contourFill(group, fillDensity)
             }
         }
+    }
+
+    // 检查是否是立方体类形状
+    private fun isCubeLike(group: PointGroup): Boolean {
+        // 简单检查：顶点数量为8，连接数量为12
+        return group.points.size == 8 && group.connections.size == 12
+    }
+
+    // 为立方体创建填充点
+    fun fillCube(cube: PointGroup, density: Double? = null): List<Point3D> {
+        val fillDensity = density ?: (precision * 2)
+        return FillAlgorithms3D.fillCubeFaces(cube, fillDensity)
     }
 
     // 轮廓填充方法
@@ -99,23 +107,9 @@ class DrawingEngine3D {
 
         // 找到与指定高度相交的连接
         for (connection in group.connections) {
-            val intersectionPoints = mutableListOf<Point3D>()
+            val intersectionPoints = FillAlgorithms3D.intersectionPoints(connection, height)
 
-            for (i in 0 until connection.points.size - 1) {
-                val p1 = connection.points[i]
-                val p2 = connection.points[i + 1]
-
-                // 检查线段是否与水平面相交
-                if ((p1.z - height) * (p2.z - height) <= 0) {
-                    // 计算交点
-                    val t = (height - p1.z) / (p2.z - p1.z)
-                    val x = p1.x + (p2.x - p1.x) * t
-                    val y = p1.y + (p2.y - p1.y) * t
-                    intersectionPoints.add(Point3D(x, y, height))
-                }
-            }
-
-            // 如果找到了交点，将它们连接起来
+            // 连接找到的交点
             if (intersectionPoints.size >= 2) {
                 val sortedPoints = sortPointsAlongContour(intersectionPoints)
                 val interpolated = DrawingAlgorithms3D.interpolatePolyline(
@@ -143,7 +137,8 @@ class DrawingEngine3D {
     fun renderGroup(
         group: PointGroup,
         renderEdges: Boolean = true,
-        renderFill: Boolean = true
+        renderFill: Boolean = true,
+        fillMethod: FillMethod3D = FillMethod3D.FACE_BY_FACE
     ): List<Point3D> {
         val points = mutableListOf<Point3D>()
 
@@ -158,14 +153,22 @@ class DrawingEngine3D {
         }
 
         if (renderFill && group.isClosed) {
-            val fillPoints = fillGroup(group, FillMethod.TRIANGULATION)
+            val fillPoints = fillGroup(group, fillMethod)
             points.addAll(fillPoints)
         }
 
-        // 使用集合去重，避免重复点
+        // 去重
         return points.distinctBy { point ->
-            Triple(point.x.roundTo(precision), point.y.roundTo(precision), point.z.roundTo(precision))
+            Triple(
+                roundToPrecision(point.x),
+                roundToPrecision(point.y),
+                roundToPrecision(point.z)
+            )
         }
+    }
+
+    private fun roundToPrecision(value: Double): Double {
+        return (value / precision).roundToInt() * precision
     }
 
     private fun Double.roundTo(precision: Double): Double {

@@ -1,15 +1,10 @@
 package work.nekow.particlecore.canvas
 
-import work.nekow.particlecore.canvas.utils.Connection
-import work.nekow.particlecore.canvas.utils.ConnectionType
-import work.nekow.particlecore.canvas.utils.Point3D
-import work.nekow.particlecore.canvas.utils.PointGroup
-import work.nekow.particlecore.canvas.utils.Triangle
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.max
+import work.nekow.particlecore.canvas.utils.*
+import kotlin.math.*
 import kotlin.random.Random
 
+@Suppress("unused")
 class FillAlgorithms3D {
     companion object {
         // 平面多边形三角剖分（耳切法）
@@ -246,6 +241,240 @@ class FillAlgorithms3D {
             }
 
             return points
+        }
+
+        fun fillCubeFaces(
+            cube: PointGroup,
+            density: Double
+        ): List<Point3D> {
+            // 立方体的6个面
+            val faces = listOf(
+                // 底面 (z = min)
+                listOf(0, 1, 2, 3),
+                // 顶面 (z = max)
+                listOf(4, 5, 6, 7),
+                // 前面 (y = min)
+                listOf(0, 1, 5, 4),
+                // 后面 (y = max)
+                listOf(3, 2, 6, 7),
+                // 左面 (x = min)
+                listOf(0, 3, 7, 4),
+                // 右面 (x = max)
+                listOf(1, 2, 6, 5)
+            )
+
+            val points = mutableListOf<Point3D>()
+
+            faces.forEach { faceIndices ->
+                val facePoints = faceIndices.map { cube.points[it] }
+                if (facePoints.size >= 3) {
+                    // 三角剖分并填充每个面
+                    val triangles = triangulatePlanarPolygon(facePoints)
+                    val faceFillPoints = fillTriangles(triangles, density)
+                    points.addAll(faceFillPoints)
+                }
+            }
+
+            return points
+        }
+
+        // 通用填充方法
+        fun fill3DShape(
+            group: PointGroup,
+            density: Double,
+            method: FillMethod3D = FillMethod3D.FACE_BY_FACE
+        ): List<Point3D> = when (method) {
+            FillMethod3D.FACE_BY_FACE -> fillByFaces(group, density)
+            FillMethod3D.VOXEL -> voxelFill(group, density)
+            FillMethod3D.CONTOUR -> contourFill(group, density)
+        }
+
+        fun fillByFaces(group: PointGroup, density: Double): List<Point3D> {
+            val points = mutableListOf<Point3D>()
+
+            // 检测并提取所有平面面
+            val faces = extractFacesFromConnections(group.connections)
+
+            faces.forEach { facePoints ->
+                if (facePoints.size >= 3) {
+                    val triangles = triangulatePlanarPolygon(facePoints)
+                    val faceFillPoints = fillTriangles(triangles, density)
+                    points.addAll(faceFillPoints)
+                }
+            }
+
+            return points
+        }
+
+        private fun extractFacesFromConnections(connections: List<Connection>): List<List<Point3D>> {
+            val faces = mutableListOf<List<Point3D>>()
+
+            // 简单的边遍历算法来找到封闭的面
+            val edgeMap = mutableMapOf<Point3D, MutableSet<Point3D>>()
+
+            // 构建边映射
+            connections.forEach { connection ->
+                for (i in 0 until connection.points.size - 1) {
+                    val p1 = connection.points[i]
+                    val p2 = connection.points[i + 1]
+
+                    edgeMap.getOrPut(p1) { mutableSetOf() }.add(p2)
+                    edgeMap.getOrPut(p2) { mutableSetOf() }.add(p1)
+                }
+
+                if (connection.isClosed) {
+                    val p1 = connection.points.last()
+                    val p2 = connection.points.first()
+                    edgeMap.getOrPut(p1) { mutableSetOf() }.add(p2)
+                    edgeMap.getOrPut(p2) { mutableSetOf() }.add(p1)
+                }
+            }
+
+            // 查找循环（面的边界）
+            val visitedEdges = mutableSetOf<Pair<Point3D, Point3D>>()
+
+            edgeMap.forEach { (start, neighbors) ->
+                neighbors.forEach { neighbor ->
+                    val edge = if (start.hashCode() < neighbor.hashCode())
+                        start to neighbor else neighbor to start
+
+                    if (edge !in visitedEdges) {
+                        val face = findFaceCycle(start, neighbor, edgeMap)
+                        if (face.size >= 3) {
+                            faces.add(face)
+                            // 标记边为已访问
+                            for (i in face.indices) {
+                                val p1 = face[i]
+                                val p2 = face[(i + 1) % face.size]
+                                val visitedEdge = if (p1.hashCode() < p2.hashCode())
+                                    p1 to p2 else p2 to p1
+                                visitedEdges.add(visitedEdge)
+                            }
+                        }
+                    }
+                }
+            }
+
+            return faces
+        }
+
+        private fun findFaceCycle(
+            start: Point3D,
+            next: Point3D,
+            edgeMap: Map<Point3D, Set<Point3D>>
+        ): List<Point3D> {
+            val path = mutableListOf(start, next)
+            var current = next
+
+            while (current != start && path.size < edgeMap.size) {
+                val neighbors = edgeMap[current] ?: break
+
+                // 找到下一个顶点（使用右手法则）
+                val prev = path[path.size - 2]
+                val candidates = neighbors.filter { it != prev }
+
+                if (candidates.isEmpty()) break
+
+                // 选择使得转向最小的顶点
+                val nextVertex = if (candidates.size == 1) {
+                    candidates.first()
+                } else {
+                    // 简单的启发式：选择角度最小的
+                    candidates.minByOrNull {
+                        angleBetween(prev, current, it)
+                    } ?: candidates.first()
+                }
+
+                path.add(nextVertex)
+                current = nextVertex
+            }
+
+            return if (current == start) path else emptyList()
+        }
+
+        private fun angleBetween(a: Point3D, b: Point3D, c: Point3D): Double {
+            val v1 = a - b
+            val v2 = c - b
+            val dot = v1.dot(v2)
+            val length1 = sqrt(v1.x.pow(2) + v1.y.pow(2) + v1.z.pow(2))
+            val length2 = sqrt(v2.x.pow(2) + v2.y.pow(2) + v2.z.pow(2))
+
+            return if (length1 > 0 && length2 > 0) {
+                acos(dot / (length1 * length2))
+            } else {
+                Double.MAX_VALUE
+            }
+        }
+
+        // 添加：轮廓填充方法（用于3D形状）
+        fun contourFill(group: PointGroup, density: Double): List<Point3D> {
+            val points = mutableListOf<Point3D>()
+            val (minPoint, maxPoint) = group.boundingBox()
+
+            // 在多个Z高度上生成切片
+            val numSlices = max(1, ((maxPoint.z - minPoint.z) / density).toInt())
+
+            for (slice in 0..numSlices) {
+                val z = minPoint.z + (maxPoint.z - minPoint.z) * slice / numSlices
+                val slicePoints = generateSlice(group, z, density)
+                points.addAll(slicePoints)
+            }
+
+            return points
+        }
+
+        // 查找所有与水平面相交的边
+        fun intersectionPoints(connection: Connection, height: Double): List<Point3D> {
+            val intersections = mutableListOf<Point3D>()
+
+            for (i in 0 until connection.points.size - 1) {
+                val p1 = connection.points[i]
+                val p2 = connection.points[i + 1]
+
+                // 检查线段是否与平面 z = constant 相交
+                if ((p1.z - height) * (p2.z - height) <= 0) {
+                    // 计算交点
+                    val t = (height - p1.z) / (p2.z - p1.z)
+                    val x = p1.x + (p2.x - p1.x) * t
+                    val y = p1.y + (p2.y - p1.y) * t
+                    intersections.add(Point3D(x, y, height))
+                }
+            }
+            return intersections
+        }
+
+        private fun generateSlice(
+            group: PointGroup,
+            z: Double,
+            tolerance: Double
+        ): List<Point3D> {
+            val slicePoints = mutableListOf<Point3D>()
+            val epsilon = tolerance * 0.1
+
+            // 查找所有与水平面相交的边
+            val intersections = mutableListOf<Point3D>()
+
+            group.connections.forEach { connection ->
+                intersections.addAll(intersectionPoints(connection, z))
+            }
+            // 连接交点形成轮廓
+            if (intersections.size >= 2) {
+                // 按角度排序（假设轮廓是凸的）
+                val center = intersections.reduce { acc, p -> acc + p } / intersections.size.toDouble()
+                val sorted = intersections.sortedBy { p ->
+                    atan2(p.y - center.y, p.x - center.x)
+                }
+
+                // 插值轮廓线
+                for (i in sorted.indices) {
+                    val p1 = sorted[i]
+                    val p2 = sorted[(i + 1) % sorted.size]
+                    val segmentPoints = DrawingAlgorithms3D.interpolateLine(p1, p2, tolerance)
+                    slicePoints.addAll(segmentPoints)
+                }
+            }
+
+            return slicePoints
         }
     }
 }
