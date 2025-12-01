@@ -11,10 +11,18 @@ class DrawingEngine3D {
     private val groups = mutableListOf<PointGroup>()
     private var precision = 0.1
 
+    /**
+     * 设置绘制精度
+     *
+     * @param precision 精度
+     */
     fun setPrecision(precision: Double) {
         this.precision = max(0.01, precision)
     }
 
+    /**
+     * 创建点组
+     */
     fun createGroup(
         points: List<Point3D>,
         connections: List<Connection> = emptyList(),
@@ -25,21 +33,36 @@ class DrawingEngine3D {
         return group
     }
 
+    /**
+     * 绘制直线
+     */
     fun drawLine(start: Point3D, end: Point3D): List<Point3D> =
         DrawingAlgorithms3D.interpolateLine(start, end, precision)
 
+    /**
+     * 绘制多段线
+     */
     fun drawPolyline(
         points: List<Point3D>,
         closed: Boolean = false
     ): List<Point3D> =
         DrawingAlgorithms3D.interpolatePolyline(points, precision, closed)
 
+    /**
+     * 绘制贝塞尔曲线
+     */
     fun drawBezierCurve(controlPoints: List<Point3D>): List<Point3D> =
         DrawingAlgorithms3D.bezierCurve(controlPoints, precision)
 
+    /**
+     * 绘制 B 样条曲线
+     */
     fun drawBSplineCurve(controlPoints: List<Point3D>): List<Point3D> =
         DrawingAlgorithms3D.bSplineCurve3D(controlPoints, stepSize = precision)
 
+    /**
+     * 渲染组
+     */
     fun renderGroup(
         group: PointGroup,
         renderEdges: Boolean = true
@@ -75,6 +98,9 @@ class DrawingEngine3D {
         return (this * factor).roundToInt() / factor
     }
 
+    /**
+     * 导出所有点
+     */
     fun exportAllPoints(): List<Point3D> =
         groups.flatMap { renderGroup(it) }
 
