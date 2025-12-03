@@ -22,11 +22,14 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 
 @Environment(EnvType.CLIENT)
+@Suppress("unused")
 class ParticleManager {
     class ParticleData(
         var light: Int,
         var pos: Vec3d,
         val id: Long,
+        var age: Int,
+        val color: ParticleColor,
         var env: ParticleEnv?,
         var world: World?,
     )
@@ -289,6 +292,15 @@ class ParticleManager {
                 val dataset = tickParticles.pop()
                 addParticlesBulk(client, dataset)
             }
+            val remove = mutableListOf<Particle>()
+            data.forEach { particle, data ->
+                data.age --
+                if (data.age <= 0) {
+                    remove.add(particle)
+                    return@forEach
+                }
+                setColor(particle, data.color)
+            }
             if (removeIds.isNotEmpty()) {
                 removeIds.forEach { id ->
                     getParticles(id).forEach {
@@ -298,6 +310,15 @@ class ParticleManager {
                 }
                 removeIds.clear()
             }
+        }
+
+        fun setColor(particle: Particle, color: ParticleColor) {
+            if (color == ParticleColor.UNSET) return
+            particle.setColor(
+                color.red / 255,
+                color.green / 255,
+                color.blue / 255
+            )
         }
 
         fun worldTick(world: ClientWorld) {
@@ -375,13 +396,7 @@ class ParticleManager {
                 particle.setVelocity(velocity.x, velocity.y, velocity.z)
                 particle.maxAge = age
 
-                if (color != ParticleColor.UNSET) {
-                    particle.setColor(
-                        color.red / 255,
-                        color.green / 255,
-                        color.blue / 255
-                    )
-                }
+                setColor(particle, color)
 
                 particle.scale(scale.toFloat())
 
@@ -390,7 +405,9 @@ class ParticleManager {
                     pos = pos,
                     id = id,
                     env = null,
-                    world = client.world
+                    world = client.world,
+                    age = age,
+                    color = color
                 )
 
                 data[particle] = particleData
