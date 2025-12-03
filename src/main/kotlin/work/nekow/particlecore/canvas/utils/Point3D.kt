@@ -1,4 +1,4 @@
-package work.nekow.particlecore.engine.utils
+package work.nekow.particlecore.canvas.utils
 
 import net.minecraft.util.math.Vec3d
 import kotlin.math.pow
@@ -17,6 +17,8 @@ data class Point3D(
 
     operator fun plus(p: Point3D) =
         Point3D(x + p.x, y + p.y, z + p.z)
+
+    fun plus(x: Double, y: Double, z: Double) = Point3D(x + x, y + y, z + z)
 
     operator fun minus(p: Point3D) =
         Point3D(x - p.x, y - p.y, z - p.z)
@@ -44,8 +46,8 @@ data class Point3D(
 
     fun distanceTo(other: Point3D) = sqrt(
         (x - other.x).pow(2) +
-            (y - other.y).pow(2) +
-            (z - other.z).pow(2)
+                (y - other.y).pow(2) +
+                (z - other.z).pow(2)
     )
 
     fun cross(other: Point3D): Point3D =
@@ -55,10 +57,16 @@ data class Point3D(
             x * other.y - y * other.x
         )
 
-    fun normalized(): Point3D {
-        val len = sqrt(x * x + y * y + z * z)
+    fun lengthSquared(): Double =
+        x.pow(2) + y.pow(2) + z.pow(2)
+
+    fun magnitude(): Double = sqrt(lengthSquared())
+
+    fun normalize(): Point3D {
+        val len = magnitude()
         return if (len > 0) this / len else this
     }
 
     fun toVec3d() = Vec3d(x, y, z)
+
 }
