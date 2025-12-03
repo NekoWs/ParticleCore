@@ -1,156 +1,146 @@
 package work.nekow.particlecore.canvas
 
+import org.joml.Matrix4f
+import org.joml.Quaternionf
+import org.joml.Vector3f
+import org.joml.Vector4f
 import work.nekow.particlecore.canvas.utils.Point3d
-import work.nekow.particlecore.canvas.utils.Quaternion
-import work.nekow.particlecore.canvas.utils.Transform
-import work.nekow.particlecore.math.ParticleColor
 import kotlin.math.*
 
 @Suppress("unused")
 class DrawingContext3D {
     private val points = mutableListOf<Point3d>()
     private var position = Point3d.ZERO
-    private var color = ParticleColor.UNSET
-    private var density = 1.0
-    private var transform = Transform()
-    private val transformStack = mutableListOf<Transform>()
+    private var matrix = Matrix4f()
+    private val matrixStack = mutableListOf<Matrix4f>()
 
     // ====== 变换操作 ======
 
-    fun pushTransform(): DrawingContext3D {
-        transformStack.add(transform.copy())
+    fun pushMatrix(): DrawingContext3D {
+        matrixStack.add(Matrix4f())
+        matrix = Matrix4f()
         return this
     }
 
-    fun popTransform(): DrawingContext3D {
-        if (transformStack.isNotEmpty()) {
-            transform = transformStack.removeLast()
-        }
+    fun popMatrix(): DrawingContext3D {
+        if (matrixStack.isNotEmpty())
+            matrix = matrixStack.removeLast()
         return this
     }
 
     fun translate(x: Double, y: Double, z: Double): DrawingContext3D {
-        transform.position = transform.position.plus(x, y, z)
+        matrix.translate(x.toFloat(), y.toFloat(), z.toFloat())
         return this
     }
 
-    fun translate(vec: Point3d): DrawingContext3D {
-        transform.position += vec
+    fun translate(vec: Point3d): DrawingContext3D = translate(vec.x, vec.y, vec.z)
 
+    fun scale(x: Double, y: Double, z: Double): DrawingContext3D {
+        matrix.scale(x.toFloat(), y.toFloat(), z.toFloat())
         return this
     }
 
-    fun rotate(axis: Point3d, angle: Double): DrawingContext3D {
-        val newRotation = Quaternion.fromAxisAngle(axis, angle)
-        // 累积到当前旋转上（局部旋转）
-        transform.currentRotation = newRotation.multiply(transform.currentRotation)
+    fun scale(vec: Point3d): DrawingContext3D = scale(vec.x, vec.y, vec.z)
+
+    fun rotateX(angle: Double): DrawingContext3D {
+        matrix.rotateX(angle.toFloat())
         return this
     }
 
-    fun rotateX(angle: Double): DrawingContext3D = rotate(Point3d(1.0, 0.0, 0.0), angle)
-    fun rotateY(angle: Double): DrawingContext3D = rotate(Point3d(0.0, 1.0, 0.0), angle)
-    fun rotateZ(angle: Double): DrawingContext3D = rotate(Point3d(0.0, 0.0, 1.0), angle)
+    fun rotateY(angle: Double): DrawingContext3D {
+        matrix.rotateY(angle.toFloat())
+        return this
+    }
 
-    /**
-     * 绕局部X轴旋转（基于当前朝向）
-     */
-    fun rotateLocalX(angle: Double): DrawingContext3D {
-        // 将旋转轴转换到局部空间
-        val localXAxis = transform.rotation.rotateVector(Point3d(1.0, 0.0, 0.0))
-        return rotate(localXAxis, angle)
+    fun rotateZ(angle: Double): DrawingContext3D {
+        matrix.rotateZ(angle.toFloat())
+        return this
+    }
+
+    fun rotate(axis: Vector3f, angle: Double): DrawingContext3D {
+        matrix.rotate(angle.toFloat(), axis)
+        return this
+    }
+
+    fun rotate(quaternion: Quaternionf): DrawingContext3D {
+        matrix.rotate(quaternion)
+        return this
+    }
+
+    fun lookAt(eye: Point3d, target: Point3d, up: Vector3f = Vector3f(0f, 1f, 0f)): DrawingContext3D {
+        val eyeVec = Vector3f(eye.x.toFloat(), eye.y.toFloat(), eye.z.toFloat())
+        val targetVec = Vector3f(target.x.toFloat(), target.y.toFloat(), target.z.toFloat())
+
+        matrix = Matrix4f().lookAt(eyeVec, targetVec, up)
+        return this
     }
 
     /**
-     * 绕局部Y轴旋转（基于当前朝向）
+     * 设置位置
      */
-    fun rotateLocalY(angle: Double): DrawingContext3D {
-        val localYAxis = transform.rotation.rotateVector(Point3d(0.0, 1.0, 0.0))
-        return rotate(localYAxis, angle)
-    }
+    fun setPosition(x: Double, y: Double, z: Double): DrawingContext3D {
+        // 保存旋转和缩放，只重置平移
+        val translation = Vector3f()
+        val rotation = Quaternionf()
+        val scale = Vector3f()
 
-    /**
-     * 绕局部Z轴旋转（基于当前朝向）
-     */
-    fun rotateLocalZ(angle: Double): DrawingContext3D {
-        val localZAxis = transform.rotation.rotateVector(Point3d(0.0, 0.0, 1.0))
-        return rotate(localZAxis, angle)
-    }
+        matrix.getTranslation(translation)
+        matrix.getUnnormalizedRotation(rotation)
+        matrix.getScale(scale)
 
+        matrix = Matrix4f()
+            .translate(x.toFloat(), y.toFloat(), z.toFloat())
+            .rotate(rotation)
+            .scale(scale)
+
+        return this
+    }
     /**
-     * 使用欧拉角设置旋转（覆盖之前的旋转，不是累积）
+     * 设置旋转
      */
     fun setRotation(pitch: Double, yaw: Double, roll: Double): DrawingContext3D {
-        transform.rotation = Quaternion.fromEulerAngles(pitch, yaw, roll)
-        transform.currentRotation = Quaternion.IDENTITY
+        val translation = Vector3f()
+        val scale = Vector3f()
+
+        matrix.getTranslation(translation)
+        matrix.getScale(scale)
+
+        matrix = Matrix4f()
+            .translate(translation)
+            .rotateXYZ(pitch.toFloat(), yaw.toFloat(), roll.toFloat())
+            .scale(scale)
+
         return this
     }
 
     /**
-     * 累积欧拉角旋转
+     * 设置缩放
      */
-    fun rotateEuler(pitch: Double, yaw: Double, roll: Double): DrawingContext3D {
-        // 创建欧拉角旋转的四元数
-        val eulerRotation = Quaternion.fromEulerAngles(pitch, yaw, roll)
-        // 累积旋转
-        transform.currentRotation = eulerRotation.multiply(transform.currentRotation)
-        return this
-    }
+    fun setScale(x: Double, y: Double = x, z: Double = x): DrawingContext3D {
+        val translation = Vector3f()
+        val rotation = Quaternionf()
 
-    fun lookAt(from: Point3d, to: Point3d, up: Point3d = Point3d(0.0, 1.0, 0.0)): DrawingContext3D {
-        transform.commitRotation()
+        matrix.getTranslation(translation)
+        matrix.getUnnormalizedRotation(rotation)
 
-        val forward = (to - from).normalize()
-        val right = up.cross(forward).normalize()
-        val actualUp = forward.cross(right).normalize()
-
-        // 构建旋转矩阵
-        // 注意：Minecraft 使用右手坐标系
-        val rotationMatrix = arrayOf(
-            doubleArrayOf(right.x, actualUp.x, forward.x),
-            doubleArrayOf(right.y, actualUp.y, forward.y),
-            doubleArrayOf(right.z, actualUp.z, forward.z)
-        )
-
-        // 将旋转矩阵转换为四元数
-        val w = sqrt(1.0 + rotationMatrix[0][0] + rotationMatrix[1][1] + rotationMatrix[2][2]) / 2.0
-        val w4 = 4.0 * w
-        val x = (rotationMatrix[2][1] - rotationMatrix[1][2]) / w4
-        val y = (rotationMatrix[0][2] - rotationMatrix[2][0]) / w4
-        val z = (rotationMatrix[1][0] - rotationMatrix[0][1]) / w4
-
-        transform.rotation = Quaternion(x, y, z, w).normalize()
-        transform.position = from
+        matrix = Matrix4f()
+            .translate(translation)
+            .rotate(rotation)
+            .scale(x.toFloat(), y.toFloat(), z.toFloat())
 
         return this
     }
 
-    fun scale(x: Double, y: Double = x, z: Double = x): DrawingContext3D {
-        transform.scale = Point3d(x, y, z)
+    // ====== 点操作 ======
+
+    fun point(x: Double, y: Double, z: Double): DrawingContext3D {
+        val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
+        vec.mul(matrix)
+        points.add(Point3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble()))
         return this
     }
 
-    fun resetTransform(): DrawingContext3D {
-        transform = Transform()
-        return this
-    }
-
-    fun resetRotation(): DrawingContext3D {
-        transform.resetRotation()
-        return this
-    }
-
-    fun density(density: Double): DrawingContext3D {
-        this.density = density
-        return this
-    }
-
-    fun addPoint(x: Double, y: Double, z: Double): DrawingContext3D {
-        val point = transform.apply(Point3d(x, y, z))
-        points.add(point)
-        return this
-    }
-
-    fun addPoint(point: Point3d): DrawingContext3D = addPoint(point.x, point.y, point.z)
+    fun point(point: Point3d): DrawingContext3D = point(point.x, point.y, point.z)
 
     // ====== 基础绘图 =====
 
@@ -164,7 +154,10 @@ class DrawingContext3D {
         return this
     }
 
-    fun moveTo(point: Point3d): DrawingContext3D {
+    fun moveTo(point: Point3d): DrawingContext3D = moveTo(point.x, point.y, point.z)
+
+    fun lineTo(point: Point3d, stepSize: Double = 0.1): DrawingContext3D {
+        points.addAll(interpolateLine(position, point, stepSize))
         position = point
         return this
     }
@@ -173,19 +166,11 @@ class DrawingContext3D {
         return lineTo(Point3d(x, y, z))
     }
 
-    fun lineTo(point: Point3d, stepSize: Double = 0.1): DrawingContext3D {
-        points.addAll(interpolateLine(position, point, stepSize))
-        position = point
-        return this
-    }
-
-    fun color(color: ParticleColor): DrawingContext3D {
-        this.color = color
-        return this
-    }
-
     // ===== 绘制形状 =====
 
+    /**
+     * 绘制圆
+     */
     fun circle(
         radius: Double,
         normal: Point3d = Point3d(0.0, 1.0, 0.0),
@@ -194,10 +179,9 @@ class DrawingContext3D {
         extent: Double = 2 * PI,
         startAngle: Double = 0.0,
     ): DrawingContext3D {
-        transform.commitRotation()
+        val center = position
 
         val n = normal.normalize()
-
         val (u, v) = computePlaneBasis(n, up)
 
         for (i in 0..segments) {
@@ -213,19 +197,126 @@ class DrawingContext3D {
                 localX * u.x + localZ * v.x,
                 localX * u.y + localZ * v.y,
                 localX * u.z + localZ * v.z
-            )
-            addPoint(worldPoint)
+            ) + center
+            point(worldPoint)
         }
         return this
     }
 
+    /**
+     * 绘制圆环
+     */
+    fun torus(
+        majorRadius: Double,
+        minorRadius: Double,
+        majorSegments: Int = 32,
+        minorSegments: Int = 16
+    ): DrawingContext3D {
+        for (i in 0..majorSegments) {
+            val majorAngle = 2 * Math.PI * i / majorSegments
+
+            for (j in 0..minorSegments) {
+                val minorAngle = 2 * Math.PI * j / minorSegments
+
+                val x = (majorRadius + minorRadius * cos(minorAngle)) * cos(majorAngle)
+                val y = minorRadius * sin(minorAngle)
+                val z = (majorRadius + minorRadius * cos(minorAngle)) * sin(majorAngle)
+
+                point(x, y, z)
+            }
+        }
+        return this
+    }
+
+    /**
+     * 绘制立方体
+     */
+    fun cube(size: Double, wireframe: Boolean = true, points: Int = 10): DrawingContext3D {
+        val half = size / 2
+
+        val vertices = listOf(
+            Point3d(-half, -half, -half),
+            Point3d(half, -half, -half),
+            Point3d(half, half, -half),
+            Point3d(-half, half, -half),
+            Point3d(-half, -half, half),
+            Point3d(half, -half, half),
+            Point3d(half, half, half),
+            Point3d(-half, half, half)
+        )
+
+        if (wireframe) {
+            // 绘制12条边
+            val edges = listOf(
+                intArrayOf(0, 1), intArrayOf(1, 2), intArrayOf(2, 3), intArrayOf(3, 0), // 前面
+                intArrayOf(4, 5), intArrayOf(5, 6), intArrayOf(6, 7), intArrayOf(7, 4), // 后面
+                intArrayOf(0, 4), intArrayOf(1, 5), intArrayOf(2, 6), intArrayOf(3, 7)  // 连接线
+            )
+
+            edges.forEach { edge ->
+                val start = vertices[edge[0]]
+                val end = vertices[edge[1]]
+
+                Shapes3D.line(start, end, points)
+            }
+        } else {
+            // 填充模式：添加所有顶点
+            vertices.forEach { vertex ->
+                point(vertex)
+            }
+        }
+
+        return this
+    }
+
+    /**
+     * 绘制圆柱
+     */
+    fun cylinder(
+        radius: Double,
+        height: Double,
+        segments: Int = 32,
+        caps: Boolean = true
+    ): DrawingContext3D {
+        // 侧面
+        for (i in 0..segments) {
+            val angle = 2 * Math.PI * i / segments
+            val x = radius * cos(angle)
+            val z = radius * sin(angle)
+            
+            // 底部点
+            point(x, 0.0, z)
+            // 顶部点
+            point(x, height, z)
+
+            // 侧面垂直线
+            for (j in 0..3) {
+                val y = height * j / 3.0
+                point(x, y, z)
+            }
+        }
+        // 顶部和底部圆盘
+        if (caps) {
+            pushMatrix()
+            circle(radius, segments = segments)
+            popMatrix()
+
+            pushMatrix()
+            translate(0.0, height, 0.0)
+            circle(radius, segments = segments)
+            popMatrix()
+        }
+        return this
+    }
+    
+    /**
+     * 绘制球体
+     */
     fun sphere(
         radius: Double,
         rings: Int = 8,
         segments: Int = 16
     ): DrawingContext3D {
-        transform.commitRotation()
-
         for (i in 0..rings) {
             val phi = Math.PI * i / rings
             for (j in 0..segments) {
@@ -235,49 +326,19 @@ class DrawingContext3D {
                 val y = radius * cos(phi)
                 val z = radius * sin(phi) * sin(theta)
 
-                addPoint(x, y, z)
+                point(x, y, z)
             }
         }
         return this
     }
 
-    fun cube(
-        size: Double,
-        wireframe: Boolean = true
+    // ====== 贝塞尔曲线 ======
+    fun bezierCurve(
+        points: List<Point3d>,
+        stepSize: Double = 0.1
     ): DrawingContext3D {
-        transform.commitRotation()
-
-        val half = size / 2
-        val vertices = listOf(
-            Point3d(-half, -half, -half), Point3d(half, -half, -half),
-            Point3d(half, half, -half), Point3d(-half, half, -half),
-            Point3d(-half, -half, half), Point3d(half, -half, half),
-            Point3d(half, half, half), Point3d(-half, half, half)
-        )
-        // 绘制边
-        if (wireframe) {
-            val edges = listOf(
-                intArrayOf(0, 1), intArrayOf(1, 2), intArrayOf(2, 3), intArrayOf(3, 0), // 前面
-                intArrayOf(4, 5), intArrayOf(5, 6), intArrayOf(6, 7), intArrayOf(7, 4), // 后面
-                intArrayOf(0, 4), intArrayOf(1, 5), intArrayOf(2, 6), intArrayOf(3, 7)  // 连接线
-            )
-            edges.forEach { edge ->
-                val start = vertices[edge[0]]
-                val end = vertices[edge[1]]
-                // 绘制线段的点
-                for (k in 0..5) {
-                    val t = k / 5.0
-                    val x = start.x + (end.x - start.x) * t
-                    val y = start.y + (end.y - start.y) * t
-                    val z = start.z + (end.z - start.z) * t
-                    addPoint(x, y, z)
-                }
-            }
-        } else {
-            // 填充模式：添加所有顶点
-            vertices.forEach { vertex ->
-                addPoint(vertex)
-            }
+        Companion.bezierCurve(points, stepSize).forEach {
+            point(it)
         }
         return this
     }

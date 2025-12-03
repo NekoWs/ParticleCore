@@ -1,7 +1,6 @@
 package work.nekow.particlecore.canvas
 
 import work.nekow.particlecore.canvas.utils.Point3d
-import work.nekow.particlecore.math.ParticleColor
 
 @Suppress("unused")
 class ShapeBuilder3D {
@@ -14,10 +13,6 @@ class ShapeBuilder3D {
 
     infix fun withRadius(radius: Double): CircleBuilder = CircleBuilder(context, radius)
     infix fun withSize(size: Double): CubeBuilder = CubeBuilder(context, size)
-    infix fun withColor(color: ParticleColor): ShapeBuilder3D {
-        context.color(color)
-        return this
-    }
 
     fun build(): List<Point3d> = context.build()
 

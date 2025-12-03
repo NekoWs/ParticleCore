@@ -1,9 +1,8 @@
 package work.nekow.particlecore.canvas
 
+import org.joml.Vector3f
 import work.nekow.particlecore.canvas.utils.Point3d
 import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
 
 @Suppress("unused")
 object Shapes3D {
@@ -11,10 +10,12 @@ object Shapes3D {
         return DrawingContext3D().apply(block).build()
     }
 
-    fun createCircle(
+    // 便捷的工厂方法
+
+    fun circle(
+        center: Point3d = Point3d.ZERO,
         radius: Double,
         normal: Point3d = Point3d(0.0, 1.0, 0.0),
-        center: Point3d = Point3d.ZERO,
         segments: Int = 32,
         extent: Double = 2 * Math.PI,
         startAngle: Double = 0.0
@@ -23,63 +24,84 @@ object Shapes3D {
         circle(radius, normal, segments = segments, extent = extent, startAngle = startAngle)
     }
 
-    fun createArcOnPlane(
-        center: Point3d,
+    fun sphere(
+        center: Point3d = Point3d.ZERO,
         radius: Double,
-        planeNormal: Point3d,
-        upDirection: Point3d,
-        startAngle: Double = 0.0,
-        extent: Double = Math.PI / 2,
+        rings: Int = 8,
         segments: Int = 16
     ): List<Point3d> = draw {
         translate(center)
-        circle(
-            radius = radius,
-            normal = planeNormal,
-            up = upDirection,
-            segments = segments,
-            extent = extent,
-            startAngle = startAngle
-        )
+        sphere(radius, rings, segments)
     }
 
-    fun createOrbitPath(
-        center: Point3d,
-        radius: Double,
-        orbitNormal: Point3d,
-        startAngle: Double = 0.0,
-        revolutions: Double = 1.0,
-        pointsPerRevolution: Int = 32
+    fun cube(
+        center: Point3d = Point3d.ZERO,
+        size: Double,
+        wireframe: Boolean = true
     ): List<Point3d> = draw {
-        val totalPoints = (pointsPerRevolution * revolutions).toInt()
-        val (u, v) = computePlaneBasis(orbitNormal, Point3d(0.0, 0.0, 1.0))
+        translate(center)
+        cube(size, wireframe)
+    }
 
-        for (i in 0..totalPoints) {
-            val t = i.toDouble() / totalPoints
-            val angle = startAngle + t * 2 * Math.PI * revolutions
+    fun cylinder(
+        center: Point3d = Point3d.ZERO,
+        radius: Double,
+        height: Double,
+        segments: Int = 32,
+        caps: Boolean = true
+    ): List<Point3d> = draw {
+        translate(center)
+        cylinder(radius, height, segments, caps)
+    }
 
-            val localX = radius * cos(angle)
-            val localZ = radius * sin(angle)
-
-            val point = Point3d(
-                center.x + localX * u.x + localZ * v.x,
-                center.y + localX * u.y + localZ * v.y,
-                center.z + localX * u.z + localZ * v.z
-            )
-
-            addPoint(point)
+    fun line(start: Point3d, end: Point3d, points: Int = 10): List<Point3d> = draw {
+        for (i in 0..points) {
+            val t = i.toDouble() / points
+            val x = start.x + (end.x - start.x) * t
+            val y = start.y + (end.y - start.y) * t
+            val z = start.z + (end.z - start.z) * t
+            point(x, y, z)
         }
     }
 
-    private fun computePlaneBasis(normal: Point3d, upHint: Point3d): Pair<Point3d, Point3d> {
-        var up = upHint
-        if (abs(up.dot(normal)) > 0.99) {
-            up = if (abs(normal.y) < 0.9) Point3d(0.0, 1.0, 0.0) else Point3d(1.0, 0.0, 0.0)
+    fun grid(
+        center: Point3d = Point3d.ZERO,
+        size: Double,
+        cells: Int,
+        normal: Point3d = Point3d(0.0, 1.0, 0.0)
+    ): List<Point3d> = draw {
+        translate(center)
+
+        val halfSize = size / 2
+        val cellSize = size / cells
+
+        // 计算平面基向量
+        val n = Vector3f(normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).normalize()
+        val up = if (abs(n.y) < 0.9f) Vector3f(0f, 1f, 0f) else Vector3f(0f, 0f, 1f)
+        val u = up.cross(n, Vector3f()).normalize()
+        val v = n.cross(u, Vector3f()).normalize()
+
+        // 绘制网格线
+        for (i in -cells..cells) {
+            val offset = halfSize * i / cells
+
+            // u方向线
+            for (j in 0..10) {
+                val t = j / 10.0
+                val pointU = offset * u.x + (-halfSize + t * size) * v.x
+                val pointV = offset * u.y + (-halfSize + t * size) * v.y
+                val pointW = offset * u.z + (-halfSize + t * size) * v.z
+                point(pointU, pointV, pointW)
+            }
+
+            // v方向线
+            for (j in 0..10) {
+                val t = j / 10.0
+                val pointU = (-halfSize + t * size) * u.x + offset * v.x
+                val pointV = (-halfSize + t * size) * u.y + offset * v.y
+                val pointW = (-halfSize + t * size) * u.z + offset * v.z
+                point(pointU, pointV, pointW)
+            }
         }
-
-        val u = up.cross(normal).normalize()
-        val v = normal.cross(u).normalize()
-
-        return Pair(u, v)
     }
 }
