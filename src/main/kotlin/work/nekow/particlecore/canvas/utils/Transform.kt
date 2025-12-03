@@ -4,15 +4,15 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 data class Transform(
-    var position: Point3d = Point3d.ZERO,
-    var rotation: Rotation = Rotation(Point3d(0.0, 1.0, 0.0), 0.0),
-    var scale: Point3d = Point3d(1.0, 1.0, 1.0)
+    var position: Point3A = Point3A.ZERO,
+    var rotation: Rotation = Rotation(Point3A(0.0, 1.0, 0.0), 0.0),
+    var scale: Point3A = Point3A(1.0, 1.0, 1.0)
 ) {
-    fun apply(point: Point3d): Point3d {
+    fun apply(point: Point3A): Point3A {
         var transformed = point
 
         // 1. 缩放
-        transformed = Point3d(
+        transformed = Point3A(
             transformed.x * scale.x,
             transformed.y * scale.y,
             transformed.z * scale.z
@@ -37,7 +37,7 @@ data class Transform(
         )
     }
 
-    private fun rotateAroundAxis(point: Point3d, axis: Point3d, angle: Double): Point3d {
+    private fun rotateAroundAxis(point: Point3A, axis: Point3A, angle: Double): Point3A {
         val normalizedAxis = axis.normalize()
         val cos = cos(angle)
         val sin = sin(angle)
@@ -65,7 +65,7 @@ data class Transform(
             )
         )
 
-        return Point3d(
+        return Point3A(
             point.x * rotationMatrix[0][0] + point.y * rotationMatrix[0][1] + point.z * rotationMatrix[0][2],
             point.x * rotationMatrix[1][0] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[1][2],
             point.x * rotationMatrix[2][0] + point.y * rotationMatrix[2][1] + point.z * rotationMatrix[2][2]
