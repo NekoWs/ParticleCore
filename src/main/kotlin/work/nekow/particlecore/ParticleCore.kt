@@ -5,7 +5,7 @@ import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.network.*
 
-class Particlecore : ModInitializer {
+class ParticleAore : ModInitializer {
     companion object {
         const val MOD_ID = "particlecore"
     }
