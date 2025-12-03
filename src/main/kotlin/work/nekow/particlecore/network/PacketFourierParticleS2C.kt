@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.math.FourierTerm
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.Particlecore.Companion.MOD_ID
+import work.nekow.particlecore.ParticleAore.Companion.MOD_ID
 
 class PacketFourierParticleS2C(
     val particle: ParticleBuilder,
