@@ -11,7 +11,6 @@ class DrawingContext3D {
     private val points = mutableListOf<Point3d>()
     private var position = Point3d.ZERO
     private var color = ParticleColor.UNSET
-    private var precision = 0.1
     private var density = 1.0
     private var transform = Transform()
     private val transformStack = mutableListOf<Transform>()
@@ -140,11 +139,6 @@ class DrawingContext3D {
         return this
     }
 
-    fun setPrecision(precision: Double): DrawingContext3D {
-        this.precision = max(0.01, precision)
-        return this
-    }
-
     fun density(density: Double): DrawingContext3D {
         this.density = density
         return this
@@ -179,8 +173,8 @@ class DrawingContext3D {
         return lineTo(Point3d(x, y, z))
     }
 
-    fun lineTo(point: Point3d): DrawingContext3D {
-        points.addAll(interpolateLine(position, point, precision))
+    fun lineTo(point: Point3d, stepSize: Double = 0.1): DrawingContext3D {
+        points.addAll(interpolateLine(position, point, stepSize))
         position = point
         return this
     }
@@ -200,6 +194,8 @@ class DrawingContext3D {
         extent: Double = 2 * PI,
         startAngle: Double = 0.0,
     ): DrawingContext3D {
+        transform.commitRotation()
+
         val n = normal.normalize()
 
         val (u, v) = computePlaneBasis(n, up)
@@ -228,6 +224,8 @@ class DrawingContext3D {
         rings: Int = 8,
         segments: Int = 16
     ): DrawingContext3D {
+        transform.commitRotation()
+
         for (i in 0..rings) {
             val phi = Math.PI * i / rings
             for (j in 0..segments) {
@@ -247,6 +245,8 @@ class DrawingContext3D {
         size: Double,
         wireframe: Boolean = true
     ): DrawingContext3D {
+        transform.commitRotation()
+
         val half = size / 2
         val vertices = listOf(
             Point3d(-half, -half, -half), Point3d(half, -half, -half),
@@ -395,13 +395,14 @@ class DrawingContext3D {
             return result
         }
 
-
         fun computePlaneBasis(normal: Point3d, upHint: Point3d): Pair<Point3d, Point3d> {
             // 如果upHint与normal平行，需要选择一个不同的up
             var up = upHint
             if (abs(up.dot(normal)) > 0.99) {
                 // 选择另一个向量作为up
-                up = if (abs(normal.y) < 0.9) Point3d(0.0, 1.0, 0.0) else Point3d(0.0, 0.0, 1.0)
+                up = if (abs(normal.y) < 0.9)
+                    Point3d(0.0, 1.0, 0.0)
+                else Point3d(0.0, 0.0, 1.0)
             }
 
             // 计算第一个基向量（垂直于normal和up）
@@ -410,49 +411,6 @@ class DrawingContext3D {
             val v = normal.cross(u).normalize()
 
             return Pair(u, v)
-        }
-        
-        /**
-         * 自动计算平面基向量
-         */
-        private fun computePlaneBasisAuto(normal: Point3d): Pair<Point3d, Point3d> {
-            // 选择一个与法向量不平行的基础向量
-            val baseUp = Point3d(0.0, 1.0, 0.0)
-            val baseRight = Point3d(1.0, 0.0, 0.0)
-
-            // 检查法向量是否接近Y轴
-            return if (abs(normal.y) < 0.9) {
-                // 使用Y轴作为上方向
-                val u = baseUp.cross(normal).normalize()
-                val v = normal.cross(u).normalize()
-                Pair(u, v)
-            } else {
-                // 使用X轴作为上方向
-                val u = baseRight.cross(normal).normalize()
-                val v = normal.cross(u).normalize()
-                Pair(u, v)
-            }
-        }
-
-        /**
-         * 将旋转矩阵转换为轴-角表示
-         */
-        private fun matrixToAxisAngle(matrix: Array<DoubleArray>): Pair<Point3d, Double> {
-            // 计算旋转角度
-            val angle = acos((matrix[0][0] + matrix[1][1] + matrix[2][2] - 1.0) / 2.0)
-
-            if (abs(angle) < 1e-10) {
-                return Pair(Point3d(1.0, 0.0, 0.0), 0.0)
-            }
-
-            // 计算旋转轴
-            val x = matrix[2][1] - matrix[1][2]
-            val y = matrix[0][2] - matrix[2][0]
-            val z = matrix[1][0] - matrix[0][1]
-            val s = 2.0 * sin(angle)
-
-            val axis = Point3d(x / s, y / s, z / s).normalize()
-            return Pair(axis, angle)
         }
     }
 }

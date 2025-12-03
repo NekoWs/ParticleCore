@@ -38,8 +38,8 @@ data class Transform(
         currentRotation = Quaternion.IDENTITY
     }
 
+    // 将累积的旋转应用到主旋转上
     fun commitRotation() {
-        // 将累积的旋转应用到主旋转上
         rotation = rotation.multiply(currentRotation)
         currentRotation = Quaternion.IDENTITY
     }
