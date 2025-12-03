@@ -24,9 +24,11 @@ class PacketParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParti
                 color = particle.color,
                 scale = particle.scale
             )
-            ParticleManager.addTickParticle(
-                data, delay
-            )
+            repeat(particle.count) {
+                ParticleManager.addTickParticle(
+                    data, delay
+                )
+            }
         }
     }
 }

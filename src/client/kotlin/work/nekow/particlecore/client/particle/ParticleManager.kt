@@ -293,7 +293,7 @@ class ParticleManager {
                 addParticlesBulk(client, dataset)
             }
             val remove = mutableListOf<Particle>()
-            data.forEach { particle, data ->
+            data.forEach { (particle, data) ->
                 data.age --
                 if (data.age <= 0) {
                     remove.add(particle)
