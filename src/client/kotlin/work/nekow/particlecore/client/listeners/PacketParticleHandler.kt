@@ -1,7 +1,7 @@
 package work.nekow.particlecore.client.listeners
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import work.nekow.particlecore.client.particle.ParticleManager.Companion.addParticle
+import work.nekow.particlecore.client.particle.ParticleManager
 import work.nekow.particlecore.client.particle.ParticleSpawnData
 import work.nekow.particlecore.network.PacketParticleS2C
 
@@ -10,8 +10,9 @@ class PacketParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParti
         payload: PacketParticleS2C,
         context: ClientPlayNetworking.Context
     ) {
-        val particle = payload.particle
-        repeat(particle.count) {
+        val particles = payload.particles
+        val delay = payload.delay
+        particles.forEach { particle ->
             val data = ParticleSpawnData(
                 type = particle.type,
                 pos = particle.pos,
@@ -23,7 +24,9 @@ class PacketParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParti
                 color = particle.color,
                 scale = particle.scale
             )
-            addParticle(data)
+            ParticleManager.addTickParticle(
+                data, delay
+            )
         }
     }
 }

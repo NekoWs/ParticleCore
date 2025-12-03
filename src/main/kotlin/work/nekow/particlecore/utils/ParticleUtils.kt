@@ -5,16 +5,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.math.FourierTerm
-import work.nekow.particlecore.network.PacketFourierParticleS2C
+import work.nekow.particlecore.network.*
 import work.nekow.particlecore.network.PacketFourierParticleS2C.FPRotate
 import work.nekow.particlecore.network.PacketFourierParticleS2C.FPScale
-import work.nekow.particlecore.network.PacketFunctionParticlesS2C
-import work.nekow.particlecore.network.PacketLineParticlesS2C
-import work.nekow.particlecore.network.PacketMarkDeadS2C
-import work.nekow.particlecore.network.PacketMoveParticleS2C
-import work.nekow.particlecore.network.PacketParticleS2C
-import work.nekow.particlecore.network.PacketRemoveTickParticlesS2C
-import work.nekow.particlecore.network.PacketVelocityParticleS2C
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.round
@@ -66,16 +59,26 @@ class ParticleUtils {
         /**
          * 使用发包方式召唤粒子效果
          */
-        fun spawnParticle(
+        fun spawnParticles(
             world: ServerWorld,
-            particle: ParticleBuilder
+            particles: List<ParticleBuilder>,
+            delay: Int = 0
         ): Long {
-            val id = nextId(particle.age)
-            val packet = PacketParticleS2C(particle, id)
+            val age = particles.maxOfOrNull { it.age } ?: 0
+            val id = nextId(age)
+            val packet = PacketParticleS2C(particles, id, delay)
             world.players.forEach {
                 ServerPlayNetworking.send(it, packet)
             }
             return id
+        }
+
+        fun spawnParticle(
+            world: ServerWorld,
+            particle: ParticleBuilder,
+            delay: Int = 0
+        ): Long {
+            return spawnParticles(world, listOf(particle), delay)
         }
 
         fun spawnLineParticle(
