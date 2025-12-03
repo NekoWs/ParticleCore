@@ -135,6 +135,11 @@ class DrawingContext3D {
         return this
     }
 
+    fun resetRotation(): DrawingContext3D {
+        transform.resetRotation()
+        return this
+    }
+
     fun setPrecision(precision: Double): DrawingContext3D {
         this.precision = max(0.01, precision)
         return this
