@@ -1,6 +1,6 @@
 package work.nekow.particlecore.canvas
 
-import work.nekow.particlecore.canvas.utils.Point3A
+import work.nekow.particlecore.canvas.utils.Point3d
 import work.nekow.particlecore.canvas.utils.Rotation
 import work.nekow.particlecore.canvas.utils.Transform
 import work.nekow.particlecore.math.ParticleColor
@@ -8,8 +8,8 @@ import kotlin.math.*
 
 @Suppress("unused")
 class DrawingContext3D {
-    private val points = mutableListOf<Point3A>()
-    private var position = Point3A.ZERO
+    private val points = mutableListOf<Point3d>()
+    private var position = Point3d.ZERO
     private var color = ParticleColor.UNSET
     private var precision = 0.1
     private var density = 1.0
@@ -35,19 +35,19 @@ class DrawingContext3D {
         return this
     }
 
-    fun translate(vec: Point3A): DrawingContext3D {
+    fun translate(vec: Point3d): DrawingContext3D {
         transform.position += vec
         return this
     }
 
-    fun rotate(axis: Point3A, angle: Double): DrawingContext3D {
+    fun rotate(axis: Point3d, angle: Double): DrawingContext3D {
         transform.rotation = Rotation(axis, angle)
         return this
     }
 
-    fun rotateX(angle: Double): DrawingContext3D = rotate(Point3A(1.0, 0.0, 0.0), angle)
-    fun rotateY(angle: Double): DrawingContext3D = rotate(Point3A(0.0, 1.0, 0.0), angle)
-    fun rotateZ(angle: Double): DrawingContext3D = rotate(Point3A(0.0, 0.0, 1.0), angle)
+    fun rotateX(angle: Double): DrawingContext3D = rotate(Point3d(1.0, 0.0, 0.0), angle)
+    fun rotateY(angle: Double): DrawingContext3D = rotate(Point3d(0.0, 1.0, 0.0), angle)
+    fun rotateZ(angle: Double): DrawingContext3D = rotate(Point3d(0.0, 0.0, 1.0), angle)
 
     /**
      * 设置圆平面的朝向（使用欧拉角）
@@ -68,7 +68,7 @@ class DrawingContext3D {
      * @param direction 要面向的方向
      * @param up 上方向
      */
-    fun faceDirection(direction: Point3A, up: Point3A = Point3A(0.0, 1.0, 0.0)): DrawingContext3D {
+    fun faceDirection(direction: Point3d, up: Point3d = Point3d(0.0, 1.0, 0.0)): DrawingContext3D {
         val forward = direction.normalize()
         val right = up.cross(forward).normalize()
         val actualUp = forward.cross(right).normalize()
@@ -89,7 +89,7 @@ class DrawingContext3D {
     }
 
     fun scale(x: Double, y: Double = x, z: Double = x): DrawingContext3D {
-        transform.scale = Point3A(x, y, z)
+        transform.scale = Point3d(x, y, z)
         return this
     }
 
@@ -109,12 +109,12 @@ class DrawingContext3D {
     }
 
     fun addPoint(x: Double, y: Double, z: Double): DrawingContext3D {
-        val point = transform.apply(Point3A(x, y, z))
+        val point = transform.apply(Point3d(x, y, z))
         points.add(point)
         return this
     }
 
-    fun addPoint(point: Point3A): DrawingContext3D = addPoint(point.x, point.y, point.z)
+    fun addPoint(point: Point3d): DrawingContext3D = addPoint(point.x, point.y, point.z)
 
     // ====== 基础绘图 =====
 
@@ -124,20 +124,20 @@ class DrawingContext3D {
     }
 
     fun moveTo(x: Double, y: Double, z: Double): DrawingContext3D {
-        position = Point3A(x, y, z)
+        position = Point3d(x, y, z)
         return this
     }
 
-    fun moveTo(point: Point3A): DrawingContext3D {
+    fun moveTo(point: Point3d): DrawingContext3D {
         position = point
         return this
     }
 
     fun lineTo(x: Double, y: Double, z: Double): DrawingContext3D {
-        return lineTo(Point3A(x, y, z))
+        return lineTo(Point3d(x, y, z))
     }
 
-    fun lineTo(point: Point3A): DrawingContext3D {
+    fun lineTo(point: Point3d): DrawingContext3D {
         points.addAll(interpolateLine(position, point, precision))
         position = point
         return this
@@ -152,8 +152,8 @@ class DrawingContext3D {
 
     fun circle(
         radius: Double,
-        normal: Point3A = Point3A(0.0, 1.0, 0.0),
-        up: Point3A = Point3A(0.0, 0.0, 1.0),
+        normal: Point3d = Point3d(0.0, 1.0, 0.0),
+        up: Point3d = Point3d(0.0, 0.0, 1.0),
         segments: Int = 32,
         extent: Double = 2 * PI,
         startAngle: Double = 0.0,
@@ -171,7 +171,7 @@ class DrawingContext3D {
             val localZ = radius * sin(angle)
 
             // 转换到世界空间
-            val worldPoint = Point3A(
+            val worldPoint = Point3d(
                 localX * u.x + localZ * v.x,
                 localX * u.y + localZ * v.y,
                 localX * u.z + localZ * v.z
@@ -187,7 +187,7 @@ class DrawingContext3D {
      * @param radius 圆的半径
      * @param segments 圆的细分段数
      */
-    fun circleAlongPath(points: List<Point3A>, radius: Double, segments: Int = 16): DrawingContext3D {
+    fun circleAlongPath(points: List<Point3d>, radius: Double, segments: Int = 16): DrawingContext3D {
         if (points.size < 2) return this
 
         for (i in points.indices) {
@@ -235,10 +235,10 @@ class DrawingContext3D {
     ): DrawingContext3D {
         val half = size / 2
         val vertices = listOf(
-            Point3A(-half, -half, -half), Point3A(half, -half, -half),
-            Point3A(half, half, -half), Point3A(-half, half, -half),
-            Point3A(-half, -half, half), Point3A(half, -half, half),
-            Point3A(half, half, half), Point3A(-half, half, half)
+            Point3d(-half, -half, -half), Point3d(half, -half, -half),
+            Point3d(half, half, -half), Point3d(-half, half, -half),
+            Point3d(-half, -half, half), Point3d(half, -half, half),
+            Point3d(half, half, half), Point3d(-half, half, half)
         )
         // 绘制边
         if (wireframe) {
@@ -268,7 +268,7 @@ class DrawingContext3D {
         return this
     }
 
-    fun build(): List<Point3A> = points.toList()
+    fun build(): List<Point3d> = points.toList()
 
     fun clear(): DrawingContext3D {
         points.clear()
@@ -284,10 +284,10 @@ class DrawingContext3D {
          * @param stepSize 精度
          */
         fun interpolateLine(
-            start: Point3A,
-            end: Point3A,
+            start: Point3d,
+            end: Point3d,
             stepSize: Double
-        ): List<Point3A> {
+        ): List<Point3d> {
             val distance = start.distanceTo(end)
             val steps = max(2, ceil(distance / stepSize).toInt())
 
@@ -305,11 +305,11 @@ class DrawingContext3D {
          * @param closed 是否闭合
          */
         fun interpolatePolyline(
-            points: List<Point3A>,
+            points: List<Point3d>,
             stepSize: Double,
             closed: Boolean = false
-        ): List<Point3A> {
-            val result = mutableListOf<Point3A>()
+        ): List<Point3d> {
+            val result = mutableListOf<Point3d>()
 
             val segments = if (closed) {
                 points.indices.map { i ->
@@ -338,9 +338,9 @@ class DrawingContext3D {
          * @param stepSize 精度
          */
         fun bezierCurve(
-            controlPoints: List<Point3A>,
+            controlPoints: List<Point3d>,
             stepSize: Double
-        ): List<Point3A> {
+        ): List<Point3d> {
             if (controlPoints.size < 2) return emptyList()
 
             // 估算曲线长度
@@ -357,10 +357,10 @@ class DrawingContext3D {
         }
 
         private fun bezierPoint(
-            controlPoints: List<Point3A>,
+            controlPoints: List<Point3d>,
             t: Double
-        ): Point3A {
-            var result = Point3A(0.0, 0.0, 0.0)
+        ): Point3d {
+            var result = Point3d(0.0, 0.0, 0.0)
             val n = controlPoints.size - 1
 
             for (i in controlPoints.indices) {
@@ -382,12 +382,12 @@ class DrawingContext3D {
         }
 
 
-        fun computePlaneBasis(normal: Point3A, upHint: Point3A): Pair<Point3A, Point3A> {
+        fun computePlaneBasis(normal: Point3d, upHint: Point3d): Pair<Point3d, Point3d> {
             // 如果upHint与normal平行，需要选择一个不同的up
             var up = upHint
             if (abs(up.dot(normal)) > 0.99) {
                 // 选择另一个向量作为up
-                up = if (abs(normal.y) < 0.9) Point3A(0.0, 1.0, 0.0) else Point3A(0.0, 0.0, 1.0)
+                up = if (abs(normal.y) < 0.9) Point3d(0.0, 1.0, 0.0) else Point3d(0.0, 0.0, 1.0)
             }
 
             // 计算第一个基向量（垂直于normal和up）
@@ -401,10 +401,10 @@ class DrawingContext3D {
         /**
          * 自动计算平面基向量
          */
-        private fun computePlaneBasisAuto(normal: Point3A): Pair<Point3A, Point3A> {
+        private fun computePlaneBasisAuto(normal: Point3d): Pair<Point3d, Point3d> {
             // 选择一个与法向量不平行的基础向量
-            val baseUp = Point3A(0.0, 1.0, 0.0)
-            val baseRight = Point3A(1.0, 0.0, 0.0)
+            val baseUp = Point3d(0.0, 1.0, 0.0)
+            val baseRight = Point3d(1.0, 0.0, 0.0)
 
             // 检查法向量是否接近Y轴
             return if (abs(normal.y) < 0.9) {
@@ -423,12 +423,12 @@ class DrawingContext3D {
         /**
          * 将旋转矩阵转换为轴-角表示
          */
-        private fun matrixToAxisAngle(matrix: Array<DoubleArray>): Pair<Point3A, Double> {
+        private fun matrixToAxisAngle(matrix: Array<DoubleArray>): Pair<Point3d, Double> {
             // 计算旋转角度
             val angle = acos((matrix[0][0] + matrix[1][1] + matrix[2][2] - 1.0) / 2.0)
 
             if (abs(angle) < 1e-10) {
-                return Pair(Point3A(1.0, 0.0, 0.0), 0.0)
+                return Pair(Point3d(1.0, 0.0, 0.0), 0.0)
             }
 
             // 计算旋转轴
@@ -437,7 +437,7 @@ class DrawingContext3D {
             val z = matrix[1][0] - matrix[0][1]
             val s = 2.0 * sin(angle)
 
-            val axis = Point3A(x / s, y / s, z / s).normalize()
+            val axis = Point3d(x / s, y / s, z / s).normalize()
             return Pair(axis, angle)
         }
     }
