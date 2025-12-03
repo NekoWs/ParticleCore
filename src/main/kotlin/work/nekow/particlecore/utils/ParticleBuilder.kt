@@ -9,7 +9,7 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Colors
 import net.minecraft.util.math.Vec3d
-import work.nekow.particlecore.getVec3d
+import work.nekow.particlecore.ParticleCore.Companion.getVec3d
 import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
 

@@ -13,6 +13,7 @@ import net.minecraft.server.command.CommandManager.argument
 import net.minecraft.server.command.CommandManager.literal
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.text.Text
+import work.nekow.particlecore.ParticleCore.Companion.getVec3d
 import work.nekow.particlecore.math.FourierTerm
 import work.nekow.particlecore.network.PacketFourierParticleS2C
 import work.nekow.particlecore.utils.ParticleBuilder

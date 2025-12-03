@@ -8,6 +8,27 @@ import work.nekow.particlecore.network.*
 class ParticleCore : ModInitializer {
     companion object {
         const val MOD_ID = "particlecore"
+
+        /**
+         * 获取 NbtCompound 中的 Vec3d
+         *
+         * @param key 键
+         * @param defaultValue 默认值，若不存在该键则返回默认值
+         * @return 获取到的 Vec3d
+         * @throws Exception 获取失败
+         */
+        fun NbtCompound.getVec3d(key: String, defaultValue: Vec3d = Vec3d.ZERO): Vec3d {
+            return this.getListOrEmpty(key).let {
+                if (it.isEmpty) return defaultValue
+
+                if (it.size != 3) throw Exception("failed to get $key because list size is not 3")
+                Vec3d(
+                    it[0].asDouble().get(),
+                    it[1].asDouble().get(),
+                    it[2].asDouble().get()
+                )
+            }
+        }
     }
 
     override fun onInitialize() {
@@ -21,26 +42,5 @@ class ParticleCore : ModInitializer {
         PacketFunctionParticlesS2C.init()
 
         ParticleCommands.init()
-    }
-}
-
-/**
- * 获取 NbtCompound 中的 Vec3d
- *
- * @param key 键
- * @param defaultValue 默认值，若不存在该键则返回默认值
- * @return 获取到的 Vec3d
- * @throws Exception 获取失败
- */
-internal fun NbtCompound.getVec3d(key: String, defaultValue: Vec3d = Vec3d.ZERO): Vec3d {
-    return this.getListOrEmpty(key).let {
-        if (it.isEmpty) return defaultValue
-
-        if (it.size != 3) throw Exception("failed to get $key because list size is not 3")
-        Vec3d(
-            it[0].asDouble().get(),
-            it[1].asDouble().get(),
-            it[2].asDouble().get()
-        )
     }
 }
