@@ -6,7 +6,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.ParticleAore.Companion.MOD_ID
+import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 
 class PacketFunctionParticlesS2C(
     val particle: ParticleBuilder,

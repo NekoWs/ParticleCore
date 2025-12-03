@@ -7,7 +7,7 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.ParticleAore.Companion.MOD_ID
+import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 
 class PacketLineParticlesS2C(
     val particle: ParticleBuilder,
