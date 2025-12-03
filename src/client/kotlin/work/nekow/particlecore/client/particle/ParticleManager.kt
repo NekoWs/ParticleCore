@@ -11,6 +11,7 @@ import net.minecraft.particle.ParticleEffect
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
@@ -290,7 +291,7 @@ class ParticleManager {
         fun tick(client: MinecraftClient) {
             if (tickParticles.isNotEmpty()) {
                 val dataset = tickParticles.pop()
-                addParticlesBulk(client, dataset)
+                addParticlesBulk(ParticlecoreClient.client, dataset)
             }
             val remove = mutableListOf<Particle>()
             data.forEach { (particle, data) ->
@@ -312,13 +313,14 @@ class ParticleManager {
             }
         }
 
-        fun setColor(particle: Particle, color: ParticleColor) {
-            if (color == ParticleColor.UNSET) return
+        fun setColor(particle: Particle, color: ParticleColor): Boolean {
+            if (color == ParticleColor.UNSET) return false
             particle.setColor(
                 color.red / 255,
                 color.green / 255,
                 color.blue / 255
             )
+            return true
         }
 
         fun worldTick(world: ClientWorld) {
@@ -394,9 +396,10 @@ class ParticleManager {
 
             if (particle != null) {
                 particle.setVelocity(velocity.x, velocity.y, velocity.z)
-                particle.maxAge = age
 
                 setColor(particle, color)
+
+                particle.maxAge = age
 
                 particle.scale(scale.toFloat())
 

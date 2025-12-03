@@ -1,6 +1,7 @@
 package work.nekow.particlecore.client.mixins;
 
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -10,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
+import work.nekow.particlecore.math.ParticleColor;
 
 import java.util.ArrayList;
 
@@ -32,7 +34,6 @@ public abstract class ParticleMixin {
     @Shadow protected float angle;
     @Shadow protected float gravityStrength;
     @Shadow public abstract void markDead();
-//    @Shadow public abstract void setPos(double x, double y, double z);
 
     @Shadow
     public abstract Particle scale(float scale);
