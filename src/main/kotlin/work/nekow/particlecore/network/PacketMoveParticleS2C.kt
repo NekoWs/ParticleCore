@@ -31,7 +31,7 @@ class PacketMoveParticleS2C(
         }
     }
 
-    override fun getId(): CustomPayload.Id<out CustomPayload?>? {
+    override fun getId(): CustomPayload.Id<out CustomPayload?> {
         return PAYLOAD_ID
     }
 }

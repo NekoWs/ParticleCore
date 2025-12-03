@@ -6,9 +6,9 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.Vec3d
+import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 import work.nekow.particlecore.math.FourierTerm
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 
 class PacketFourierParticleS2C(
     val particle: ParticleBuilder,
@@ -45,7 +45,7 @@ class PacketFourierParticleS2C(
                     buf.readDouble(),
                     let { length = buf.readInt(); length },
                     ArrayList<FourierTerm>().let {
-                        repeat(length) { i ->
+                        repeat(length) { _ ->
                             it.add(FourierTerm.PACKET_CODEC.decode(buf))
                         }
                         it

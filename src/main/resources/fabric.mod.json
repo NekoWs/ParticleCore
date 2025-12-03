@@ -14,7 +14,7 @@
       "work.nekow.particlecore.client.ParticlecoreClient"
     ],
     "main": [
-      "ParticleAore"
+      "work.nekow.particlecore.ParticleCore"
     ]
   },
   "mixins": [

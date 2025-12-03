@@ -12,9 +12,9 @@ class PacketRemoveTickParticlesS2C: CustomPayload {
         val ID: Identifier = Identifier.of(MOD_ID, "remove_tick_particles")
         val PAYLOAD_ID = CustomPayload.Id<PacketRemoveTickParticlesS2C>(ID)
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, PacketRemoveTickParticlesS2C> = CustomPayload.codecOf(
-            { packet, buf ->
-                buf
-            }, { buf ->
+            { _, _ ->
+
+            }, { _ ->
                 PacketRemoveTickParticlesS2C()
             }
         )
@@ -22,7 +22,7 @@ class PacketRemoveTickParticlesS2C: CustomPayload {
             PayloadTypeRegistry.playS2C().register(PAYLOAD_ID, PACKET_CODEC)
         }
     }
-    override fun getId(): CustomPayload.Id<out CustomPayload?>? {
+    override fun getId(): CustomPayload.Id<out CustomPayload?> {
         return PAYLOAD_ID
     }
 }
