@@ -1,6 +1,5 @@
 package work.nekow.particlecore.canvas.utils
 
-import work.nekow.particlecore.canvas.utils.Point3D
 import kotlin.math.cos
 import kotlin.math.sin
 
