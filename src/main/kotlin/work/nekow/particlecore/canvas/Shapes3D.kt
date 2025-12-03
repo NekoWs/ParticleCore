@@ -2,11 +2,12 @@ package work.nekow.particlecore.canvas
 
 import org.joml.Vector3f
 import work.nekow.particlecore.canvas.utils.Point3d
+import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.abs
 
 @Suppress("unused")
 object Shapes3D {
-    fun draw(block: DrawingContext3D.() -> Unit): List<Point3d> {
+    fun draw(block: DrawingContext3D.() -> Unit): List<ParticleBuilder> {
         return DrawingContext3D().apply(block).build()
     }
 
@@ -19,7 +20,7 @@ object Shapes3D {
         segments: Int = 32,
         extent: Double = 2 * Math.PI,
         startAngle: Double = 0.0
-    ): List<Point3d> = draw {
+    ): List<ParticleBuilder> = draw {
         translate(center)
         circle(radius, normal, segments = segments, extent = extent, startAngle = startAngle)
     }
@@ -29,7 +30,7 @@ object Shapes3D {
         radius: Double,
         rings: Int = 8,
         segments: Int = 16
-    ): List<Point3d> = draw {
+    ): List<ParticleBuilder> = draw {
         translate(center)
         sphere(radius, rings, segments)
     }
@@ -38,7 +39,7 @@ object Shapes3D {
         center: Point3d = Point3d.ZERO,
         size: Double,
         wireframe: Boolean = true
-    ): List<Point3d> = draw {
+    ): List<ParticleBuilder> = draw {
         translate(center)
         cube(size, wireframe)
     }
@@ -49,12 +50,12 @@ object Shapes3D {
         height: Double,
         segments: Int = 32,
         caps: Boolean = true
-    ): List<Point3d> = draw {
+    ): List<ParticleBuilder> = draw {
         translate(center)
         cylinder(radius, height, segments, caps)
     }
 
-    fun line(start: Point3d, end: Point3d, points: Int = 10): List<Point3d> = draw {
+    fun line(start: Point3d, end: Point3d, points: Int = 10): List<ParticleBuilder> = draw {
         for (i in 0..points) {
             val t = i.toDouble() / points
             val x = start.x + (end.x - start.x) * t
@@ -69,7 +70,7 @@ object Shapes3D {
         size: Double,
         cells: Int,
         normal: Point3d = Point3d(0.0, 1.0, 0.0)
-    ): List<Point3d> = draw {
+    ): List<ParticleBuilder> = draw {
         translate(center)
 
         val halfSize = size / 2

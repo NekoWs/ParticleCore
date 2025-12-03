@@ -1,6 +1,7 @@
 package work.nekow.particlecore.canvas
 
 import work.nekow.particlecore.canvas.utils.Point3d
+import work.nekow.particlecore.utils.ParticleBuilder
 
 @Suppress("unused")
 class ShapeBuilder3D {
@@ -14,14 +15,14 @@ class ShapeBuilder3D {
     infix fun withRadius(radius: Double): CircleBuilder = CircleBuilder(context, radius)
     infix fun withSize(size: Double): CubeBuilder = CubeBuilder(context, size)
 
-    fun build(): List<Point3d> = context.build()
+    fun build(): List<ParticleBuilder> = context.build()
 
     class CircleBuilder(private val context: DrawingContext3D, private val radius: Double) {
         infix fun inDirection(normal: Point3d): CircleBuilder2 {
             return CircleBuilder2(context, radius, normal)
         }
 
-        fun build(): List<Point3d> {
+        fun build(): List<ParticleBuilder> {
             context.circle(radius)
             return context.build()
         }
@@ -36,7 +37,7 @@ class ShapeBuilder3D {
             return CircleBuilder3(context, radius, normal, count)
         }
 
-        fun build(): List<Point3d> {
+        fun build(): List<ParticleBuilder> {
             context.circle(radius, normal)
             return context.build()
         }
@@ -52,7 +53,7 @@ class ShapeBuilder3D {
             return CircleBuilder4(context, radius, normal, segments, angle)
         }
 
-        fun build(): List<Point3d> {
+        fun build(): List<ParticleBuilder> {
             context.circle(radius, normal, segments = segments)
             return context.build()
         }
@@ -65,14 +66,14 @@ class ShapeBuilder3D {
         private val segments: Int,
         private val extent: Double
     ) {
-        fun build(): List<Point3d> {
+        fun build(): List<ParticleBuilder> {
             context.circle(radius, normal, segments = segments, extent = extent)
             return context.build()
         }
     }
 
     class CubeBuilder(private val context: DrawingContext3D, private val size: Double) {
-        fun build(): List<Point3d> {
+        fun build(): List<ParticleBuilder> {
             context.cube(size)
             return context.build()
         }

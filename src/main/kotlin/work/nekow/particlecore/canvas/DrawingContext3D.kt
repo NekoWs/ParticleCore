@@ -1,15 +1,18 @@
 package work.nekow.particlecore.canvas
 
+import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.joml.Vector4f
 import work.nekow.particlecore.canvas.utils.Point3d
+import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.*
 
 @Suppress("unused")
 class DrawingContext3D {
-    private val points = mutableListOf<Point3d>()
+    private val pointStyle = ParticleBuilder()
+    private val points = mutableListOf<ParticleBuilder>()
     private var position = Point3d.ZERO
     private var matrix = Matrix4f()
     private val matrixStack = mutableListOf<Matrix4f>()
@@ -136,7 +139,8 @@ class DrawingContext3D {
     fun point(x: Double, y: Double, z: Double): DrawingContext3D {
         val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
         vec.mul(matrix)
-        points.add(Point3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble()))
+        val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
+        points.add(pointStyle.clone().pos(vec3d))
         return this
     }
 
@@ -157,7 +161,9 @@ class DrawingContext3D {
     fun moveTo(point: Point3d): DrawingContext3D = moveTo(point.x, point.y, point.z)
 
     fun lineTo(point: Point3d, stepSize: Double = 0.1): DrawingContext3D {
-        points.addAll(interpolateLine(position, point, stepSize))
+        interpolateLine(position, point, stepSize).forEach {
+            point(it)
+        }
         position = point
         return this
     }
@@ -167,6 +173,14 @@ class DrawingContext3D {
     }
 
     // ===== 绘制形状 =====
+
+    /**
+     * 设置点样式
+     */
+    fun setStyle(block: ParticleBuilder.() -> Unit): DrawingContext3D {
+        pointStyle.apply(block)
+        return this
+    }
 
     /**
      * 绘制圆
@@ -333,6 +347,7 @@ class DrawingContext3D {
     }
 
     // ====== 贝塞尔曲线 ======
+
     fun bezierCurve(
         points: List<Point3d>,
         stepSize: Double = 0.1
@@ -343,7 +358,7 @@ class DrawingContext3D {
         return this
     }
 
-    fun build(): List<Point3d> = points.toList()
+    fun build(): List<ParticleBuilder> = points.toList()
 
     fun clear(): DrawingContext3D {
         points.clear()
