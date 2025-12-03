@@ -135,6 +135,9 @@ class ParticleBuilder {
         this.expression = expression
         return this
     }
+    fun expression(expression: String): ParticleBuilder {
+        return expression(Expressions(expression))
+    }
     fun modifyExp(modifier: (Expressions) -> (Unit)): ParticleBuilder {
         modifier.invoke(this.expression)
         return this
