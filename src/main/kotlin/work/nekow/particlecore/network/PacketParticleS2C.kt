@@ -47,7 +47,7 @@ class PacketParticleS2C(
             PayloadTypeRegistry.playS2C().register(PAYLOAD_ID, PACKET_CODEC)
         }
     }
-    override fun getId(): CustomPayload.Id<out CustomPayload?>? {
+    override fun getId(): CustomPayload.Id<out CustomPayload?> {
         return PAYLOAD_ID
     }
 }
