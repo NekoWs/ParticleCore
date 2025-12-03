@@ -74,7 +74,6 @@ object Shapes3D {
         translate(center)
 
         val halfSize = size / 2
-        val cellSize = size / cells
 
         // 计算平面基向量
         val n = Vector3f(normal.x.toFloat(), normal.y.toFloat(), normal.z.toFloat()).normalize()
