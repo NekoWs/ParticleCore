@@ -13,6 +13,7 @@ import work.nekow.particlecore.getVec3d
 import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
 
+@Suppress("unused")
 class ParticleBuilder {
     /**
      * 类型
@@ -170,6 +171,6 @@ class ParticleBuilder {
      * @return ParticleUtils.spawnParticle
      */
     fun spawnAt(world: ServerWorld): Long {
-        return ParticleUtils.Companion.spawnParticle(world, this)
+        return ParticleUtils.spawnParticle(world, this)
     }
 }
