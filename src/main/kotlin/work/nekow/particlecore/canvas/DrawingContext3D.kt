@@ -1,7 +1,7 @@
 package work.nekow.particlecore.canvas
 
 import work.nekow.particlecore.canvas.utils.Point3d
-import work.nekow.particlecore.canvas.utils.Rotation
+import work.nekow.particlecore.canvas.utils.Quaternion
 import work.nekow.particlecore.canvas.utils.Transform
 import work.nekow.particlecore.math.ParticleColor
 import kotlin.math.*
@@ -37,11 +37,14 @@ class DrawingContext3D {
 
     fun translate(vec: Point3d): DrawingContext3D {
         transform.position += vec
+
         return this
     }
 
     fun rotate(axis: Point3d, angle: Double): DrawingContext3D {
-        transform.rotation = Rotation(axis, angle)
+        val newRotation = Quaternion.fromAxisAngle(axis, angle)
+        // 累积到当前旋转上（局部旋转）
+        transform.currentRotation = newRotation.multiply(transform.currentRotation)
         return this
     }
 
@@ -50,40 +53,74 @@ class DrawingContext3D {
     fun rotateZ(angle: Double): DrawingContext3D = rotate(Point3d(0.0, 0.0, 1.0), angle)
 
     /**
-     * 设置圆平面的朝向（使用欧拉角）
-     * @param pitch X轴旋转（绕X轴，弧度）
-     * @param yaw Y轴旋转（绕Y轴，弧度）
-     * @param roll Z轴旋转（绕Z轴，弧度）
+     * 绕局部X轴旋转（基于当前朝向）
      */
-    fun orient(pitch: Double = 0.0, yaw: Double = 0.0, roll: Double = 0.0): DrawingContext3D {
-        // 应用旋转顺序：Yaw -> Pitch -> Roll
-        rotateY(yaw)
-        rotateX(pitch)
-        rotateZ(roll)
+    fun rotateLocalX(angle: Double): DrawingContext3D {
+        // 将旋转轴转换到局部空间
+        val localXAxis = transform.rotation.rotateVector(Point3d(1.0, 0.0, 0.0))
+        return rotate(localXAxis, angle)
+    }
+
+    /**
+     * 绕局部Y轴旋转（基于当前朝向）
+     */
+    fun rotateLocalY(angle: Double): DrawingContext3D {
+        val localYAxis = transform.rotation.rotateVector(Point3d(0.0, 1.0, 0.0))
+        return rotate(localYAxis, angle)
+    }
+
+    /**
+     * 绕局部Z轴旋转（基于当前朝向）
+     */
+    fun rotateLocalZ(angle: Double): DrawingContext3D {
+        val localZAxis = transform.rotation.rotateVector(Point3d(0.0, 0.0, 1.0))
+        return rotate(localZAxis, angle)
+    }
+
+    /**
+     * 使用欧拉角设置旋转（覆盖之前的旋转，不是累积）
+     */
+    fun setRotation(pitch: Double, yaw: Double, roll: Double): DrawingContext3D {
+        transform.rotation = Quaternion.fromEulerAngles(pitch, yaw, roll)
+        transform.currentRotation = Quaternion.IDENTITY
         return this
     }
 
     /**
-     * 面向指定方向，同时保持上方向
-     * @param direction 要面向的方向
-     * @param up 上方向
+     * 累积欧拉角旋转
      */
-    fun faceDirection(direction: Point3d, up: Point3d = Point3d(0.0, 1.0, 0.0)): DrawingContext3D {
-        val forward = direction.normalize()
+    fun rotateEuler(pitch: Double, yaw: Double, roll: Double): DrawingContext3D {
+        // 创建欧拉角旋转的四元数
+        val eulerRotation = Quaternion.fromEulerAngles(pitch, yaw, roll)
+        // 累积旋转
+        transform.currentRotation = eulerRotation.multiply(transform.currentRotation)
+        return this
+    }
+
+    fun lookAt(from: Point3d, to: Point3d, up: Point3d = Point3d(0.0, 1.0, 0.0)): DrawingContext3D {
+        transform.commitRotation()
+
+        val forward = (to - from).normalize()
         val right = up.cross(forward).normalize()
         val actualUp = forward.cross(right).normalize()
 
         // 构建旋转矩阵
+        // 注意：Minecraft 使用右手坐标系
         val rotationMatrix = arrayOf(
-            doubleArrayOf(right.x, right.y, right.z),
-            doubleArrayOf(actualUp.x, actualUp.y, actualUp.z),
-            doubleArrayOf(forward.x, forward.y, forward.z)
+            doubleArrayOf(right.x, actualUp.x, forward.x),
+            doubleArrayOf(right.y, actualUp.y, forward.y),
+            doubleArrayOf(right.z, actualUp.z, forward.z)
         )
 
-        val (axis, angle) = matrixToAxisAngle(rotationMatrix)
-        if (angle != 0.0) {
-            transform.rotation = Rotation(axis, angle)
-        }
+        // 将旋转矩阵转换为四元数
+        val w = sqrt(1.0 + rotationMatrix[0][0] + rotationMatrix[1][1] + rotationMatrix[2][2]) / 2.0
+        val w4 = 4.0 * w
+        val x = (rotationMatrix[2][1] - rotationMatrix[1][2]) / w4
+        val y = (rotationMatrix[0][2] - rotationMatrix[2][0]) / w4
+        val z = (rotationMatrix[1][0] - rotationMatrix[0][1]) / w4
+
+        transform.rotation = Quaternion(x, y, z, w).normalize()
+        transform.position = from
 
         return this
     }
@@ -177,34 +214,6 @@ class DrawingContext3D {
                 localX * u.z + localZ * v.z
             )
             addPoint(worldPoint)
-        }
-        return this
-    }
-
-    /**
-     * 沿路径绘制圆（圆平面始终垂直于路径方向）
-     * @param points 路径点
-     * @param radius 圆的半径
-     * @param segments 圆的细分段数
-     */
-    fun circleAlongPath(points: List<Point3d>, radius: Double, segments: Int = 16): DrawingContext3D {
-        if (points.size < 2) return this
-
-        for (i in points.indices) {
-            val point = points[i]
-
-            // 计算路径方向（作为圆的法向量）
-            val direction = if (i < points.size - 1) {
-                (points[i + 1] - point).normalize()
-            } else {
-                (point - points[i - 1]).normalize()
-            }
-
-            pushTransform()
-            translate(point)
-            faceDirection(direction)
-            circle(radius, normal = direction, segments = segments)
-            popTransform()
         }
         return this
     }

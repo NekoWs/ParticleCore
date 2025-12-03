@@ -1,13 +1,12 @@
 package work.nekow.particlecore.canvas.utils
 
-import kotlin.math.cos
-import kotlin.math.sin
-
 data class Transform(
     var position: Point3d = Point3d.ZERO,
-    var rotation: Rotation = Rotation(Point3d(0.0, 1.0, 0.0), 0.0),
+    var rotation: Quaternion = Quaternion.IDENTITY,
     var scale: Point3d = Point3d(1.0, 1.0, 1.0)
 ) {
+    var currentRotation: Quaternion = Quaternion.IDENTITY
+
     fun apply(point: Point3d): Point3d {
         var transformed = point
 
@@ -19,9 +18,7 @@ data class Transform(
         )
 
         // 2. 旋转
-        if (rotation.angle != 0.0 && rotation.axis.lengthSquared() > 0) {
-            transformed = rotateAroundAxis(transformed, rotation.axis, rotation.angle)
-        }
+        transformed = rotation.rotateVector(transformed)
 
         // 3. 平移
         transformed += position
@@ -30,45 +27,20 @@ data class Transform(
     }
 
     fun copy(): Transform {
-        return Transform(
-            position.copy(),
-            rotation.copy(),
-            scale.copy()
+        val copy = Transform(
+            position, rotation, scale
         )
+        copy.currentRotation = currentRotation
+        return copy
     }
 
-    private fun rotateAroundAxis(point: Point3d, axis: Point3d, angle: Double): Point3d {
-        val normalizedAxis = axis.normalize()
-        val cos = cos(angle)
-        val sin = sin(angle)
-        val oneMinusCos = 1.0 - cos
+    fun resetRotation() {
+        currentRotation = Quaternion.IDENTITY
+    }
 
-        val x = normalizedAxis.x
-        val y = normalizedAxis.y
-        val z = normalizedAxis.z
-
-        val rotationMatrix = arrayOf(
-            doubleArrayOf(
-                cos + x * x * oneMinusCos,
-                x * y * oneMinusCos - z * sin,
-                x * z * oneMinusCos + y * sin
-            ),
-            doubleArrayOf(
-                y * x * oneMinusCos + z * sin,
-                cos + y * y * oneMinusCos,
-                y * z * oneMinusCos - x * sin
-            ),
-            doubleArrayOf(
-                z * x * oneMinusCos - y * sin,
-                z * y * oneMinusCos + x * sin,
-                cos + z * z * oneMinusCos
-            )
-        )
-
-        return Point3d(
-            point.x * rotationMatrix[0][0] + point.y * rotationMatrix[0][1] + point.z * rotationMatrix[0][2],
-            point.x * rotationMatrix[1][0] + point.y * rotationMatrix[1][1] + point.z * rotationMatrix[1][2],
-            point.x * rotationMatrix[2][0] + point.y * rotationMatrix[2][1] + point.z * rotationMatrix[2][2]
-        )
+    fun commitRotation() {
+        // 将累积的旋转应用到主旋转上
+        rotation = rotation.multiply(currentRotation)
+        currentRotation = Quaternion.IDENTITY
     }
 }
