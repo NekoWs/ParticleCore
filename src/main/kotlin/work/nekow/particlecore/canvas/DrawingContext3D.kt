@@ -191,7 +191,7 @@ class DrawingContext3D {
     /**
      * 设置点样式
      */
-    fun setStyle(block: ParticleBuilder.() -> Unit): DrawingContext3D {
+    fun style(block: ParticleBuilder.() -> Unit): DrawingContext3D {
         pointStyle.apply(block)
         return this
     }
