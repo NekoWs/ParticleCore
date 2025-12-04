@@ -11,7 +11,7 @@ class FunctionPoints(
     val step: Double,
 ) {
     val exps: List<Pair<Expression?, List<Pair<String, Expression>>>> by lazy {
-        if (function.isEmpty()) emptyList() else FunctionSolver.Companion.parseExpressionWithCache(function)
+        if (function.isEmpty()) emptyList() else FunctionSolver.parseExpressionWithCache(function)
     }
     val points = mutableListOf<Vec3d>()
 
@@ -39,7 +39,7 @@ class FunctionPoints(
         while (t <= range.second) {
             values["t"] = numberValue(t)
 
-            FunctionSolver.Companion.evaluateCond(exps, values, variables).forEach { (prefix, exp) ->
+            FunctionSolver.evaluateCond(exps, values, variables).forEach { (prefix, exp) ->
                 try {
                     val value = exp.withValues(variables)
                         .withValues(values)
