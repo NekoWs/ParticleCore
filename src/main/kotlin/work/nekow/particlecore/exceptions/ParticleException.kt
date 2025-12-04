@@ -1,3 +1,3 @@
-package work.nekow.particlecore.utils
+package work.nekow.particlecore.exceptions
 
 class ParticleException(msg: String): Exception(msg)
