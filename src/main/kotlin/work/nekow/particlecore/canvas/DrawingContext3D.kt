@@ -169,6 +169,17 @@ class DrawingContext3D {
         return this
     }
 
+    fun line(start: Point3d, end: Point3d, points: Int = 10): DrawingContext3D {
+        for (i in 0..points) {
+            val t = i.toDouble() / points
+            val x = start.x + (end.x - start.x) * t
+            val y = start.y + (end.y - start.y) * t
+            val z = start.z + (end.z - start.z) * t
+            point(x, y, z)
+        }
+        return this
+    }
+
     fun lineTo(x: Double, y: Double, z: Double): DrawingContext3D {
         return lineTo(Point3d(x, y, z))
     }
@@ -242,46 +253,82 @@ class DrawingContext3D {
         }
         return this
     }
-
     /**
-     * 绘制立方体
+     * 绘制长方体
+     * @param width X轴方向长度
+     * @param height Y轴方向长度
+     * @param depth Z轴方向长度
+     * @param wireframe 是否绘制线框（true）还是填充点（false）
+     * @param density 点密度（用于填充模式）
      */
-    fun cube(size: Double, wireframe: Boolean = true, points: Int = 10): DrawingContext3D {
-        val half = size / 2
-
-        val vertices = listOf(
-            Point3d(-half, -half, -half),
-            Point3d(half, -half, -half),
-            Point3d(half, half, -half),
-            Point3d(-half, half, -half),
-            Point3d(-half, -half, half),
-            Point3d(half, -half, half),
-            Point3d(half, half, half),
-            Point3d(-half, half, half)
-        )
+    fun box(
+        width: Double,
+        height: Double,
+        depth: Double,
+        wireframe: Boolean = true,
+        density: Double = 1.0
+    ): DrawingContext3D {
+        val halfWidth = width / 2
+        val halfHeight = height / 2
+        val halfDepth = depth / 2
 
         if (wireframe) {
-            // 绘制12条边
+            // 绘制线框模式的长方体（12条边）
+            val vertices = listOf(
+                Point3d(-halfWidth, -halfHeight, -halfDepth), // 0: 左前下
+                Point3d(halfWidth, -halfHeight, -halfDepth),  // 1: 右前下
+                Point3d(halfWidth, halfHeight, -halfDepth),   // 2: 右前上
+                Point3d(-halfWidth, halfHeight, -halfDepth),  // 3: 左前上
+                Point3d(-halfWidth, -halfHeight, halfDepth),  // 4: 左后下
+                Point3d(halfWidth, -halfHeight, halfDepth),   // 5: 右后下
+                Point3d(halfWidth, halfHeight, halfDepth),    // 6: 右后上
+                Point3d(-halfWidth, halfHeight, halfDepth)    // 7: 左后上
+            )
+
+            // 12条边
             val edges = listOf(
-                intArrayOf(0, 1), intArrayOf(1, 2), intArrayOf(2, 3), intArrayOf(3, 0), // 前面
-                intArrayOf(4, 5), intArrayOf(5, 6), intArrayOf(6, 7), intArrayOf(7, 4), // 后面
-                intArrayOf(0, 4), intArrayOf(1, 5), intArrayOf(2, 6), intArrayOf(3, 7)  // 连接线
+                // 前方面
+                intArrayOf(0, 1), intArrayOf(1, 2), intArrayOf(2, 3), intArrayOf(3, 0),
+                // 后方面
+                intArrayOf(4, 5), intArrayOf(5, 6), intArrayOf(6, 7), intArrayOf(7, 4),
+                // 连接线
+                intArrayOf(0, 4), intArrayOf(1, 5), intArrayOf(2, 6), intArrayOf(3, 7)
             )
 
             edges.forEach { edge ->
                 val start = vertices[edge[0]]
                 val end = vertices[edge[1]]
 
-                Shapes3D.line(start, end, points)
+                // 在边上采样点
+                val distance = sqrt(
+                    (end.x - start.x).pow(2) +
+                            (end.y - start.y).pow(2) +
+                            (end.z - start.z).pow(2)
+                )
+
+                val segments = max(1, (distance * density).toInt())
+                line(start, end, segments)
             }
         } else {
-            // 填充模式：添加所有顶点
-            vertices.forEach { vertex ->
-                point(vertex)
+            // 填充模式：在长方体内部生成随机点
+            val pointCount = max(1, (width * height * depth * density).toInt())
+
+            for (i in 0 until pointCount) {
+                val x = (Math.random() * width) - halfWidth
+                val y = (Math.random() * height) - halfHeight
+                val z = (Math.random() * depth) - halfDepth
+                point(x, y, z)
             }
         }
 
         return this
+    }
+
+    /**
+     * 绘制一个方盒子（立方体的别名）
+     */
+    fun box(size: Double, wireframe: Boolean = true, density: Double = 1.0): DrawingContext3D {
+        return box(size, size, size, wireframe, density)
     }
 
     /**
@@ -347,13 +394,35 @@ class DrawingContext3D {
         return this
     }
 
-    // ====== 贝塞尔曲线 ======
-
-    fun bezierCurve(
+    /**
+     * 贝塞尔曲线
+     *
+     * @param points 控制点列表
+     * @param stepSize 步长
+     */
+    fun bezier(
         points: List<Point3d>,
         stepSize: Double = 0.1
     ): DrawingContext3D {
-        Companion.bezierCurve(points, stepSize).forEach {
+        bezierCurve(points, stepSize).forEach {
+            point(it)
+        }
+        return this
+    }
+
+    /**
+     * 多段线
+     *
+     * @param points 点列表
+     * @param stepSize 步长
+     * @param closed 是否闭合
+     */
+    fun polyline(
+        points: List<Point3d>,
+        stepSize: Double,
+        closed: Boolean = false
+    ): DrawingContext3D {
+        interpolatePolyline(points, stepSize, closed).forEach {
             point(it)
         }
         return this

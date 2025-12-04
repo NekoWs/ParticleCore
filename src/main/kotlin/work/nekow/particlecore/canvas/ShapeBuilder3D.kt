@@ -74,7 +74,7 @@ class ShapeBuilder3D {
 
     class CubeBuilder(private val context: DrawingContext3D, private val size: Double) {
         fun build(): List<ParticleBuilder> {
-            context.cube(size)
+            context.box(size)
             return context.build()
         }
     }

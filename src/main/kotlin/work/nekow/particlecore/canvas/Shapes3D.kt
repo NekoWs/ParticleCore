@@ -11,8 +11,6 @@ object Shapes3D {
         return DrawingContext3D().apply(block).build()
     }
 
-    // 便捷的工厂方法
-
     fun circle(
         center: Point3d = Point3d.ZERO,
         radius: Double,
@@ -35,13 +33,32 @@ object Shapes3D {
         sphere(radius, rings, segments)
     }
 
-    fun cube(
+    /**
+     * 绘制长方体
+     */
+    fun box(
         center: Point3d = Point3d.ZERO,
-        size: Double,
-        wireframe: Boolean = true
+        width: Double,
+        height: Double,
+        depth: Double,
+        wireframe: Boolean = true,
+        density: Double = 1.0
     ): List<ParticleBuilder> = draw {
         translate(center)
-        cube(size, wireframe)
+        box(width, height, depth, wireframe, density)
+    }
+
+    /**
+     * 绘制立方体（方盒子）
+     */
+    fun box(
+        center: Point3d = Point3d.ZERO,
+        size: Double,
+        wireframe: Boolean = true,
+        density: Double = 1.0
+    ): List<ParticleBuilder> = draw {
+        translate(center)
+        box(size, size, size, wireframe, density)
     }
 
     fun cylinder(
@@ -56,13 +73,22 @@ object Shapes3D {
     }
 
     fun line(start: Point3d, end: Point3d, points: Int = 10): List<ParticleBuilder> = draw {
-        for (i in 0..points) {
-            val t = i.toDouble() / points
-            val x = start.x + (end.x - start.x) * t
-            val y = start.y + (end.y - start.y) * t
-            val z = start.z + (end.z - start.z) * t
-            point(x, y, z)
-        }
+        line(start, end, points)
+    }
+
+    fun bezier(
+        points: List<Point3d>,
+        stepSize: Double = 0.1
+    ): List<ParticleBuilder> = draw {
+        bezier(points, stepSize)
+    }
+
+    fun polyline(
+        points: List<Point3d>,
+        stepSize: Double,
+        closed: Boolean = false
+    ): List<ParticleBuilder> = draw {
+        polyline(points, stepSize, closed)
     }
 
     fun grid(
