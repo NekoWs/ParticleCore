@@ -7,6 +7,7 @@ import org.joml.Vector3f
 import org.joml.Vector4f
 import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
+import work.nekow.particlecore.math.FunctionPoints
 import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.*
 
@@ -425,6 +426,24 @@ class DrawingContext3D {
     ): DrawingContext3D {
         interpolatePolyline(points, stepSize, closed).forEach {
             point(it)
+        }
+        return this
+    }
+
+    /**
+     * 使用函数绘制图像
+     *
+     * @param function 函数
+     * @param range 范围
+     * @param step 步长
+     */
+    fun function(
+        function: String,
+        range: Pair<Double, Double>,
+        step: Double,
+    ): DrawingContext3D {
+        FunctionPoints(function, range, step).points.forEach {
+            point(Point3d(it))
         }
         return this
     }
