@@ -14,7 +14,7 @@ class LineParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketLinePar
         payload: PacketLineParticlesS2C,
         context: ClientPlayNetworking.Context
     ) {
-        exec(
+        line(
             payload.particle,
             payload.from,
             payload.to,
@@ -24,7 +24,7 @@ class LineParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketLinePar
         )
     }
     companion object {
-        fun exec(
+        fun line(
             particle: ParticleBuilder,
             from: Vec3d,
             to: Vec3d,
@@ -39,17 +39,10 @@ class LineParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketLinePar
             var particleDelay = 0.0
 
             repeat(round(distance / step).toInt()) {
-                ParticleManager.addTickParticle(ParticleSpawnData(
-                    type = particle.type,
-                    pos = pos,
-                    velocity = particle.velocity,
-                    offset = particle.offset,
-                    age = particle.age,
-                    id = id,
-                    expression = particle.expression.build(),
-                    scale = particle.scale,
-                    color = particle.color,
-                ), floor(delay).toInt())
+                ParticleManager.addTickParticle(
+                    ParticleSpawnData.fromBuilder(particle, id),
+                    floor(delay).toInt()
+                )
                 particleDelay += delay
                 pos = pos.add(direction.multiply(step))
             }

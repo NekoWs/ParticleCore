@@ -12,6 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
 import work.nekow.particlecore.math.ParticleColor;
+import work.nekow.particlecore.utils.ParticlePath;
+import work.nekow.particlecore.utils.ParticlePathData;
 
 import java.util.ArrayList;
 
@@ -37,6 +39,32 @@ public abstract class ParticleMixin {
 
     @Shadow
     public abstract Particle scale(float scale);
+
+    @Shadow
+    public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
+
+    @Unique
+    private ParticlePathData particlePathData = null;
+
+    @Unique
+    private Double time = 0.0;
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    public void pathTick(CallbackInfo ci) {
+        var self = (Particle)(Object) this;
+        if (particlePathData == null) {
+            var data = ParticleManager.Companion.getData(self);
+            if (data != null) {
+                particlePathData = data.getPath();
+            }
+        }
+        if (particlePathData == null) return;
+        var path = particlePathData.getPath();
+        time += particlePathData.getSpeed();
+        if (path instanceof ParticlePath.EmptyPath) return;
+        var pos = path.apply(time);
+        setVelocity(pos.getX(), pos.getY(), pos.getZ());
+    }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tick(CallbackInfo ci) {

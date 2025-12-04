@@ -1,5 +1,7 @@
 package work.nekow.particlecore.utils
 
+import work.nekow.particlecore.exceptions.SyntaxError
+
 @Suppress("unused")
 class Expressions(
     val expression: String = ""

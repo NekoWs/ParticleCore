@@ -14,16 +14,9 @@ class PacketParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<PacketPart
         val particles = payload.particles
         var delay: Double = payload.delay.toDouble()
         particles.forEach { particle ->
-            val data = ParticleSpawnData(
-                type = particle.type,
-                pos = particle.pos,
-                velocity = particle.velocity,
-                offset = particle.offset,
-                age = particle.age,
+            val data = ParticleSpawnData.fromBuilder(
+                builder = particle,
                 id = payload.id,
-                expression = particle.expression.build(),
-                color = particle.color,
-                scale = particle.scale
             )
             repeat(particle.count) {
                 ParticleManager.addTickParticle(data, delay.roundToInt())

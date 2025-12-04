@@ -51,6 +51,11 @@ class ParticleBuilder {
     var expression: Expressions = Expressions()
 
     /**
+     * 粒子路径（耗能一般）
+     */
+    var path: ParticlePathData = ParticlePathData()
+
+    /**
      * 颜色
      */
     var color: ParticleColor = ParticleColor.UNSET
@@ -69,6 +74,7 @@ class ParticleBuilder {
                 buf.writeInt(packet.age)
                 buf.writeInt(packet.count)
                 buf.writeString(packet.expression.build())
+                ParticlePathData.PACKET_CODEC.encode(buf, packet.path)
                 ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeDouble(packet.scale)
             }, { buf ->
@@ -80,6 +86,7 @@ class ParticleBuilder {
                     .age(buf.readInt())
                     .count(buf.readInt())
                     .expression(Expressions(buf.readString()))
+                    .path(ParticlePathData.PACKET_CODEC.decode(buf))
                     .color(ParticleColor.PACKET_CODEC.decode(buf))
                     .scale(buf.readDouble())
             }
@@ -145,6 +152,14 @@ class ParticleBuilder {
     fun buildExp(): String {
         return this.expression.build()
     }
+    fun path(path: ParticlePath, speed: Double = 0.1): ParticleBuilder {
+        this.path = ParticlePathData(path, speed)
+        return this
+    }
+    fun path(path: ParticlePathData): ParticleBuilder {
+        this.path = path
+        return this
+    }
     fun color(color: ParticleColor): ParticleBuilder {
         this.color = color
         return this
@@ -163,6 +178,7 @@ class ParticleBuilder {
             .age(age)
             .count(count)
             .expression(expression)
+            .path(path)
             .color(color)
             .scale(scale)
     }

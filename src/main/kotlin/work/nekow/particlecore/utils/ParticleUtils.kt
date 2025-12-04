@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
+import work.nekow.particlecore.exceptions.ParticleException
 import work.nekow.particlecore.math.FourierTerm
 import work.nekow.particlecore.network.*
 import work.nekow.particlecore.network.PacketFourierParticleS2C.FPRotate
