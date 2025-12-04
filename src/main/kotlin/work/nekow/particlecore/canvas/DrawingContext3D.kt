@@ -142,11 +142,14 @@ class DrawingContext3D {
     fun point(x: Double, y: Double, z: Double): DrawingContext3D {
         val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
         vec.mul(matrix)
+        val pos4f = Vector4f(position.x.toFloat(), position.y.toFloat(), position.z.toFloat(), 1.0f)
+        pos4f.mul(matrix)
         val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
+        val pos = Vec3d(pos4f.x.toDouble(), pos4f.y.toDouble(), pos4f.z.toDouble())
         points.add(
             pointStyle.clone()
                 .pos(vec3d)
-                .path { center = position.toVec3d() }
+                .path { center = pos.add(center) }
         )
         return this
     }

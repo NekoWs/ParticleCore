@@ -182,7 +182,7 @@ class ParticleBuilder {
             .age(age)
             .count(count)
             .expression(expression)
-            .path(path)
+            .path(path.clone())
             .color(color)
             .scale(scale)
     }

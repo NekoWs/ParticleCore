@@ -5,10 +5,14 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.util.math.Vec3d
 
 data class ParticlePathData(
-    val path: ParticlePath = ParticlePath.EmptyPath(),
+    var path: ParticlePath = ParticlePath.EmptyPath(),
     var center: Vec3d = Vec3d.ZERO,
-    val speed: Double = 0.1
+    var speed: Double = 0.1
 ) {
+    fun clone(): ParticlePathData = ParticlePathData(
+        path, center, speed
+    )
+
     companion object {
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticlePathData> = PacketCodec.of<RegistryByteBuf, ParticlePathData>(
             { packet, buf ->

@@ -19,7 +19,9 @@ data class ParticleBuilders(
         particleDelay: Double = 0.0
     ) {
         val move = particles.map { particle ->
-            particle.clone().pos(particle.pos.add(pos))
+            particle.clone()
+                .pos(particle.pos.add(pos))
+                .path { center = center.add(pos) }.also { println("Center: ${it.path.center}") }
         }
         ParticleUtils.spawnParticles(
             world, move, delay, particleDelay
