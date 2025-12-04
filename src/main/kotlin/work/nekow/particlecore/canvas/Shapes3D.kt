@@ -1,13 +1,13 @@
 package work.nekow.particlecore.canvas
 
 import org.joml.Vector3f
+import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
-import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.abs
 
 @Suppress("unused")
 object Shapes3D {
-    fun draw(block: DrawingContext3D.() -> Unit): List<ParticleBuilder> {
+    fun draw(block: DrawingContext3D.() -> Unit): ParticleBuilders {
         return DrawingContext3D().apply(block).build()
     }
 
@@ -18,7 +18,7 @@ object Shapes3D {
         segments: Int = 32,
         extent: Double = 2 * Math.PI,
         startAngle: Double = 0.0
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
         circle(radius, normal, segments = segments, extent = extent, startAngle = startAngle)
     }
@@ -28,7 +28,7 @@ object Shapes3D {
         radius: Double,
         rings: Int = 8,
         segments: Int = 16
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
         sphere(radius, rings, segments)
     }
@@ -43,7 +43,7 @@ object Shapes3D {
         depth: Double,
         wireframe: Boolean = true,
         density: Double = 1.0
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
         box(width, height, depth, wireframe, density)
     }
@@ -56,7 +56,7 @@ object Shapes3D {
         size: Double,
         wireframe: Boolean = true,
         density: Double = 1.0
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
         box(size, size, size, wireframe, density)
     }
@@ -67,19 +67,19 @@ object Shapes3D {
         height: Double,
         segments: Int = 32,
         caps: Boolean = true
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
         cylinder(radius, height, segments, caps)
     }
 
-    fun line(start: Point3d, end: Point3d, points: Int = 10): List<ParticleBuilder> = draw {
+    fun line(start: Point3d, end: Point3d, points: Int = 10): ParticleBuilders = draw {
         line(start, end, points)
     }
 
     fun bezier(
         points: List<Point3d>,
         stepSize: Double = 0.1
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         bezier(points, stepSize)
     }
 
@@ -87,7 +87,7 @@ object Shapes3D {
         points: List<Point3d>,
         stepSize: Double,
         closed: Boolean = false
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         polyline(points, stepSize, closed)
     }
 
@@ -96,7 +96,7 @@ object Shapes3D {
         size: Double,
         cells: Int,
         normal: Point3d = Point3d(0.0, 1.0, 0.0)
-    ): List<ParticleBuilder> = draw {
+    ): ParticleBuilders = draw {
         translate(center)
 
         val halfSize = size / 2

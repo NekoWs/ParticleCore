@@ -5,6 +5,7 @@ import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
 import org.joml.Vector4f
+import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
 import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.*
@@ -428,7 +429,7 @@ class DrawingContext3D {
         return this
     }
 
-    fun build(): List<ParticleBuilder> = points.toList()
+    fun build(): ParticleBuilders = ParticleBuilders(points.toList())
 
     fun clear(): DrawingContext3D {
         points.clear()
