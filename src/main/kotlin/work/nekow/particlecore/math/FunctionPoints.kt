@@ -1,10 +1,8 @@
-package work.nekow.particlecore.client.particle
+package work.nekow.particlecore.math
 
 import com.ezylang.evalex.Expression
 import com.ezylang.evalex.data.EvaluationValue
 import net.minecraft.util.math.Vec3d
-import work.nekow.particlecore.math.FunctionSolver.Companion.evaluateCond
-import work.nekow.particlecore.math.FunctionSolver.Companion.parseExpressionWithCache
 import java.math.BigDecimal
 
 class FunctionPoints(
@@ -13,7 +11,7 @@ class FunctionPoints(
     val step: Double,
 ) {
     val exps: List<Pair<Expression?, List<Pair<String, Expression>>>> by lazy {
-        if (function.isEmpty()) emptyList() else parseExpressionWithCache(function)
+        if (function.isEmpty()) emptyList() else FunctionSolver.Companion.parseExpressionWithCache(function)
     }
     val points = mutableListOf<Vec3d>()
 
@@ -41,7 +39,7 @@ class FunctionPoints(
         while (t <= range.second) {
             values["t"] = numberValue(t)
 
-            evaluateCond(exps, values, variables).forEach { (prefix, exp) ->
+            FunctionSolver.Companion.evaluateCond(exps, values, variables).forEach { (prefix, exp) ->
                 try {
                     val value = exp.withValues(variables)
                         .withValues(values)
@@ -54,15 +52,17 @@ class FunctionPoints(
                     }
                 } catch (_: Exception) { /* ignore */ }
             }
-            points.add(Vec3d(
-                values["x"]!!.numberValue.toDouble(),
-                values["y"]!!.numberValue.toDouble(),
-                values["z"]!!.numberValue.toDouble(),
-            ))
+            points.add(
+                Vec3d(
+                    values["x"]!!.numberValue.toDouble(),
+                    values["y"]!!.numberValue.toDouble(),
+                    values["z"]!!.numberValue.toDouble(),
+                )
+            )
             t += step
         }
     }
-    
+
     fun numberValue(value: Number): EvaluationValue {
         return EvaluationValue.numberValue(BigDecimal.valueOf(value.toDouble()))
     }

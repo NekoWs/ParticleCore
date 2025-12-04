@@ -62,11 +62,12 @@ class ParticleUtils {
         fun spawnParticles(
             world: ServerWorld,
             particles: List<ParticleBuilder>,
-            delay: Int = 0
+            delay: Int = 0,
+            particleDelay: Double = 0.0
         ): Long {
             val age = particles.maxOfOrNull { it.age } ?: 0
             val id = nextId(age)
-            val packet = PacketParticleS2C(particles, id, delay)
+            val packet = PacketParticlesS2C(particles, id, delay, particleDelay)
             world.players.forEach {
                 ServerPlayNetworking.send(it, packet)
             }

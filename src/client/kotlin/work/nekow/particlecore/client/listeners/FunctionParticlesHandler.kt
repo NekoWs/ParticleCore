@@ -1,9 +1,9 @@
 package work.nekow.particlecore.client.listeners
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import work.nekow.particlecore.client.particle.FunctionPoints
 import work.nekow.particlecore.client.particle.ParticleManager
 import work.nekow.particlecore.client.particle.ParticleSpawnData
+import work.nekow.particlecore.math.FunctionPoints
 import work.nekow.particlecore.network.PacketFunctionParticlesS2C
 import kotlin.math.floor
 

@@ -15,8 +15,8 @@ class ParticlecoreClient : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(PacketParticleS2C.PAYLOAD_ID,
-            PacketParticleHandler()
+        ClientPlayNetworking.registerGlobalReceiver(PacketParticlesS2C.PAYLOAD_ID,
+            PacketParticlesHandler()
         )
         ClientPlayNetworking.registerGlobalReceiver(PacketFourierParticleS2C.PAYLOAD_ID,
             FourierParticleHandler()

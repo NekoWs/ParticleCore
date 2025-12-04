@@ -32,7 +32,7 @@ class ParticleCore : ModInitializer {
     }
 
     override fun onInitialize() {
-        PacketParticleS2C.init()
+        PacketParticlesS2C.init()
         PacketFourierParticleS2C.init()
         PacketMarkDeadS2C.init()
         PacketMoveParticleS2C.init()

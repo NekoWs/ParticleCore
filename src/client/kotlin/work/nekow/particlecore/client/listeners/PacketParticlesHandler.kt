@@ -3,15 +3,16 @@ package work.nekow.particlecore.client.listeners
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import work.nekow.particlecore.client.particle.ParticleManager
 import work.nekow.particlecore.client.particle.ParticleSpawnData
-import work.nekow.particlecore.network.PacketParticleS2C
+import work.nekow.particlecore.network.PacketParticlesS2C
+import kotlin.math.roundToInt
 
-class PacketParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParticleS2C> {
+class PacketParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParticlesS2C> {
     override fun receive(
-        payload: PacketParticleS2C,
+        payload: PacketParticlesS2C,
         context: ClientPlayNetworking.Context
     ) {
         val particles = payload.particles
-        val delay = payload.delay
+        var delay: Double = payload.delay.toDouble()
         particles.forEach { particle ->
             val data = ParticleSpawnData(
                 type = particle.type,
@@ -25,8 +26,9 @@ class PacketParticleHandler: ClientPlayNetworking.PlayPayloadHandler<PacketParti
                 scale = particle.scale
             )
             repeat(particle.count) {
-                ParticleManager.addTickParticle(data, delay)
+                ParticleManager.addTickParticle(data, delay.roundToInt())
             }
+            delay += payload.particleDelay
         }
     }
 }

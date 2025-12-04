@@ -8,16 +8,17 @@ import net.minecraft.util.Identifier
 import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 import work.nekow.particlecore.utils.ParticleBuilder
 
-class PacketParticleS2C(
+class PacketParticlesS2C(
     val particles: List<ParticleBuilder>,
     val id: Long,
     val delay: Int,
+    val particleDelay: Double,
     val size: Int = particles.size,
 ): CustomPayload {
     companion object {
         val ID: Identifier = Identifier.of(MOD_ID, "particle")
-        val PAYLOAD_ID = CustomPayload.Id<PacketParticleS2C>(ID)
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, PacketParticleS2C> = CustomPayload.codecOf(
+        val PAYLOAD_ID = CustomPayload.Id<PacketParticlesS2C>(ID)
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, PacketParticlesS2C> = CustomPayload.codecOf(
             { packet, buf ->
                 buf.writeInt(packet.size)
                 packet.particles.forEach {
@@ -25,6 +26,7 @@ class PacketParticleS2C(
                 }
                 buf.writeLong(packet.id)
                 buf.writeInt(packet.delay)
+                buf.writeDouble(packet.particleDelay)
             }, { buf ->
                 val size = buf.readInt()
                 val particles = mutableListOf<ParticleBuilder>()
@@ -35,10 +37,12 @@ class PacketParticleS2C(
                 }
                 val id = buf.readLong()
                 val delay = buf.readInt()
-                PacketParticleS2C(
+                val particleDelay = buf.readDouble()
+                PacketParticlesS2C(
                     particles = particles,
                     size = size,
                     delay = delay,
+                    particleDelay = particleDelay,
                     id = id
                 )
             }
