@@ -8,7 +8,7 @@ import kotlin.math.sin
 
 @Suppress("unused")
 sealed interface ParticlePath {
-    fun apply(t: Double): Vec3d
+    fun apply(t: Double, center: Vec3d): Vec3d
 
     enum class Axis {
         X, Y, Z
@@ -29,11 +29,11 @@ sealed interface ParticlePath {
         val b: Double = 0.5,
         val axis: Axis = Axis.Y
     ): ParticlePath {
-        override fun apply(t: Double): Vec3d {
+        override fun apply(t: Double, center: Vec3d): Vec3d {
             return when (axis) {
-                Axis.Y -> Vec3d(cos(t) * a, 0.0, sin(t) * b)
-                Axis.X -> Vec3d(0.0, cos(t) * a, sin(t) * b)
-                Axis.Z -> Vec3d(cos(t) * a, sin(t) * b, 0.0)
+                Axis.Y -> center + Vec3d(cos(t) * a, 0.0, sin(t) * b)
+                Axis.X -> center + Vec3d(0.0, cos(t) * a, sin(t) * b)
+                Axis.Z -> center + Vec3d(cos(t) * a, sin(t) * b, 0.0)
             }
         }
     }
@@ -45,8 +45,8 @@ sealed interface ParticlePath {
         val radius: Double = 1.0,
         val pitch: Double = 0.05
     ): ParticlePath {
-        override fun apply(t: Double): Vec3d {
-            return Vec3d(cos(t) * radius, t * pitch, sin(t) * radius)
+        override fun apply(t: Double, center: Vec3d): Vec3d {
+            return center + Vec3d(cos(t) * radius, t * pitch, sin(t) * radius)
         }
     }
 
@@ -58,13 +58,13 @@ sealed interface ParticlePath {
         val b: Double = 1.0,
         val delta: Double = Math.PI / 2
     ): ParticlePath {
-        override fun apply(t: Double): Vec3d {
-            return Vec3d(sin(a * t), sin(b * t + delta), 0.0)
+        override fun apply(t: Double, center: Vec3d): Vec3d {
+            return center + Vec3d(sin(a * t), sin(b * t + delta), 0.0)
         }
     }
 
     class EmptyPath(): ParticlePath {
-        override fun apply(t: Double): Vec3d = Vec3d.ZERO
+        override fun apply(t: Double, center: Vec3d): Vec3d = center
     }
 
     companion object {
@@ -107,7 +107,6 @@ sealed interface ParticlePath {
                 }
             }, { buf ->
                 val type = PathTypes.valueOf(buf.readString())
-                println("Unpack type: ${type.name.uppercase()}")
                 when (type) {
                     PathTypes.Ellipse -> {
                         EllipsePath(

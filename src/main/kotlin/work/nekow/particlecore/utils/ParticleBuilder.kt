@@ -152,8 +152,12 @@ class ParticleBuilder {
     fun buildExp(): String {
         return this.expression.build()
     }
-    fun path(path: ParticlePath, speed: Double = 0.1): ParticleBuilder {
-        this.path = ParticlePathData(path, speed)
+    fun path(path: ParticlePath, center: Vec3d = Vec3d.ZERO, speed: Double = 0.1): ParticleBuilder {
+        this.path = ParticlePathData(path, center, speed)
+        return this
+    }
+    fun path(block: ParticlePathData.() -> Unit): ParticleBuilder {
+        this.path.apply(block)
         return this
     }
     fun path(path: ParticlePathData): ParticleBuilder {

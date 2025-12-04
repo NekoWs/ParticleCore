@@ -1,7 +1,6 @@
 package work.nekow.particlecore.client.mixins;
 
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
-import work.nekow.particlecore.math.ParticleColor;
 import work.nekow.particlecore.utils.ParticlePath;
 import work.nekow.particlecore.utils.ParticlePathData;
 
@@ -60,10 +58,11 @@ public abstract class ParticleMixin {
         }
         if (particlePathData == null) return;
         var path = particlePathData.getPath();
+        var center = particlePathData.getCenter();
         time += particlePathData.getSpeed();
         if (path instanceof ParticlePath.EmptyPath) return;
-        var pos = path.apply(time);
-        setVelocity(pos.getX(), pos.getY(), pos.getZ());
+        var vec = path.apply(time, center).subtract(x, y, z);
+        setVelocity(vec.getX(), vec.getY(), vec.getZ());
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

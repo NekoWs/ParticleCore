@@ -143,7 +143,11 @@ class DrawingContext3D {
         val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
         vec.mul(matrix)
         val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
-        points.add(pointStyle.clone().pos(vec3d))
+        points.add(
+            pointStyle.clone()
+                .pos(vec3d)
+                .path { center = position.toVec3d() }
+        )
         return this
     }
 
