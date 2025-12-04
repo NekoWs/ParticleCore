@@ -13,7 +13,7 @@ data class ParticlePathData(
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticlePathData> = PacketCodec.of<RegistryByteBuf, ParticlePathData>(
             { packet, buf ->
                 ParticlePath.PACKET_CODEC.encode(buf, packet.path)
-                buf.writeVec3d(Vec3d.ZERO)
+                buf.writeVec3d(packet.center)
                 buf.writeDouble(packet.speed)
             }, { buf ->
                 ParticlePathData(
