@@ -9,6 +9,7 @@ import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
 import work.nekow.particlecore.math.FunctionPoints
 import work.nekow.particlecore.utils.ParticleBuilder
+import work.nekow.particlecore.utils.ParticleRotation
 import kotlin.math.*
 
 @Suppress("unused")
@@ -142,14 +143,14 @@ class DrawingContext3D {
     fun point(x: Double, y: Double, z: Double): DrawingContext3D {
         val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
         vec.mul(matrix)
-        val pos4f = Vector4f(position.x.toFloat(), position.y.toFloat(), position.z.toFloat(), 1.0f)
-        pos4f.mul(matrix)
+        val pos = Vector4f(position.x.toFloat(), position.y.toFloat(), position.z.toFloat(), 1.0f)
+        pos.mul(matrix)
         val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
-        val pos = Vec3d(pos4f.x.toDouble(), pos4f.y.toDouble(), pos4f.z.toDouble())
+        val pos3d = Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
         points.add(
             pointStyle.clone()
                 .pos(vec3d)
-                .path { center = pos.add(center) }
+                .rotation { ParticleRotation(it.center.add(pos3d), it.quat) }
         )
         return this
     }

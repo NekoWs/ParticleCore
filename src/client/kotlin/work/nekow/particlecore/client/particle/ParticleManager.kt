@@ -9,11 +9,12 @@ import net.minecraft.client.world.ClientWorld
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
+import org.joml.Matrix4f
 import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
-import work.nekow.particlecore.utils.ParticlePathData
+import work.nekow.particlecore.utils.RotationData
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -30,7 +31,7 @@ class ParticleManager {
         val id: Long,
         var age: Int,
         val color: ParticleColor,
-        val path: ParticlePathData,
+        val rotationData: RotationData,
         var env: ParticleEnv?,
         var world: World?,
         val maxAge: Int = age
@@ -77,9 +78,6 @@ class ParticleManager {
          */
         fun getParticles(id: Long): ConcurrentLinkedQueue<Particle> =
             ids[id] ?: ConcurrentLinkedQueue()
-
-        fun hasData(particle: Particle): Boolean =
-            particleData.containsKey(particle)
 
         /**
          * 获取粒子数据
@@ -387,7 +385,7 @@ class ParticleManager {
                 world = client.world,
                 age = data.age,
                 color = data.color,
-                path = data.path
+                rotationData = RotationData(data.rotation, Matrix4f())
             )
 
             particleData[particle] = currentData

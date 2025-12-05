@@ -5,7 +5,7 @@ import net.minecraft.particle.ParticleEffect
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.math.ParticleColor
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.utils.ParticlePathData
+import work.nekow.particlecore.utils.ParticleRotation
 
 data class ParticleSpawnData(
     val type: ParticleEffect,
@@ -16,7 +16,7 @@ data class ParticleSpawnData(
     val id: Long,
     val expression: String,
     val args: HashMap<String, EvaluationValue> = hashMapOf(),
-    val path: ParticlePathData = ParticlePathData(),
+    val rotation: ParticleRotation = ParticleRotation(),
     val color: ParticleColor = ParticleColor.UNSET,
     val scale: Double = 1.0
 ) {
@@ -35,7 +35,7 @@ data class ParticleSpawnData(
                 id = id,
                 expression = builder.expression.build(),
                 args = args,
-                path = builder.path,
+                rotation = builder.rotation,
                 color = builder.color,
                 scale = builder.scale
             )

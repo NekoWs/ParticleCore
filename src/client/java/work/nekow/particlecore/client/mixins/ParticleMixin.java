@@ -2,6 +2,10 @@ package work.nekow.particlecore.client.mixins;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.Vec3d;
+import org.joml.Matrix4f;
+import org.joml.Vector3d;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -10,8 +14,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
-import work.nekow.particlecore.utils.ParticlePath;
-import work.nekow.particlecore.utils.ParticlePathData;
+import work.nekow.particlecore.utils.ParticleRotation;
+import work.nekow.particlecore.utils.RotationData;
 
 import java.util.ArrayList;
 
@@ -42,27 +46,42 @@ public abstract class ParticleMixin {
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
     @Unique
-    private ParticlePathData particlePathData = null;
+    private RotationData rotationData = null;
 
     @Unique
-    private Double time = 0.0;
+    private Vector3f toVec3f(double x, double y, double z) {
+        return new Vector3f((float) x, (float) y, (float) z);
+    }
+    @Unique
+    private Vector3f toVec3f(Vec3d vec3d) {
+        return toVec3f(vec3d.x, vec3d.y, vec3d.z);
+    }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void pathTick(CallbackInfo ci) {
         var self = (Particle)(Object) this;
-        if (particlePathData == null) {
+        if (rotationData == null) {
             var data = ParticleManager.Companion.getData(self);
             if (data != null) {
-                particlePathData = data.getPath();
+                rotationData = data.getRotationData();
             }
         }
-        if (particlePathData == null) return;
-        var path = particlePathData.getPath();
-        var center = particlePathData.getCenter();
-        time += particlePathData.getSpeed();
-        if (path instanceof ParticlePath.EmptyPath) return;
-        var vec = path.apply(time, center).subtract(x, y, z);
-        setVelocity(vec.getX(), vec.getY(), vec.getZ());
+        if (rotationData == null) return;
+        var rotation = rotationData.getRotation();
+//        var matrix = rotationData.getMatrix();
+        var matrix = new Matrix4f();
+        if (rotation == ParticleRotation.Companion.getUNSET()) return;
+        var pos = toVec3f(x, y, z);
+        var quat = rotation.getQuat();
+        var center = toVec3f(rotation.getCenter());
+
+        matrix.translate(center)
+                .rotate(quat)
+                .translate(center.negate());
+
+        var newPos = pos.mulPosition(matrix);
+        var vec = newPos.sub(toVec3f(x, y, z));
+        setVelocity(vec.x, vec.y, vec.z);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

@@ -9,6 +9,7 @@ import net.minecraft.particle.ParticleTypes
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.Colors
 import net.minecraft.util.math.Vec3d
+import org.joml.Quaternionf
 import work.nekow.particlecore.ParticleCore.Companion.getVec3d
 import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
@@ -51,9 +52,9 @@ class ParticleBuilder {
     var expression: Expressions = Expressions()
 
     /**
-     * 粒子路径（耗能一般）
+     * 粒子旋转
      */
-    var path: ParticlePathData = ParticlePathData()
+    var rotation: ParticleRotation = ParticleRotation.UNSET
 
     /**
      * 颜色
@@ -74,7 +75,7 @@ class ParticleBuilder {
                 buf.writeInt(packet.age)
                 buf.writeInt(packet.count)
                 buf.writeString(packet.expression.build())
-                ParticlePathData.PACKET_CODEC.encode(buf, packet.path)
+                ParticleRotation.PACKET_CODEC.encode(buf, packet.rotation)
                 ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeDouble(packet.scale)
             }, { buf ->
@@ -86,7 +87,7 @@ class ParticleBuilder {
                     .age(buf.readInt())
                     .count(buf.readInt())
                     .expression(Expressions(buf.readString()))
-                    .path(ParticlePathData.PACKET_CODEC.decode(buf))
+                    .rotation(ParticleRotation.PACKET_CODEC.decode(buf))
                     .color(ParticleColor.PACKET_CODEC.decode(buf))
                     .scale(buf.readDouble())
             }
@@ -152,16 +153,23 @@ class ParticleBuilder {
     fun buildExp(): String {
         return this.expression.build()
     }
-    fun path(path: ParticlePath, center: Vec3d = Vec3d.ZERO, speed: Double = 0.1): ParticleBuilder {
-        this.path = ParticlePathData(path, center, speed)
+    fun rotation(
+        quat: Quaternionf = Quaternionf(),
+        center: Vec3d = Vec3d.ZERO,
+    ): ParticleBuilder {
+        rotation = ParticleRotation(center, quat)
         return this
     }
-    fun path(block: ParticlePathData.() -> Unit): ParticleBuilder {
-        this.path.apply(block)
+    fun rotationQuat(block: Quaternionf.() -> Unit): ParticleBuilder {
+        rotation.quat.apply(block)
         return this
     }
-    fun path(path: ParticlePathData): ParticleBuilder {
-        this.path = path
+    fun rotation(rotation: ParticleRotation): ParticleBuilder {
+        this.rotation = rotation
+        return this
+    }
+    fun rotation(block: (ParticleRotation) -> ParticleRotation): ParticleBuilder {
+        rotation = block(rotation)
         return this
     }
     fun color(color: ParticleColor): ParticleBuilder {
@@ -182,7 +190,7 @@ class ParticleBuilder {
             .age(age)
             .count(count)
             .expression(expression)
-            .path(path.clone())
+            .rotation(rotation)
             .color(color)
             .scale(scale)
     }

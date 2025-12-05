@@ -3,6 +3,7 @@ package work.nekow.particlecore.canvas.utils
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.utils.ParticleBuilder
+import work.nekow.particlecore.utils.ParticleRotation
 import work.nekow.particlecore.utils.ParticleUtils
 
 @Suppress("unused")
@@ -21,7 +22,7 @@ data class ParticleBuilders(
         val move = particles.map { particle ->
             particle.clone()
                 .pos(particle.pos.add(pos))
-                .path { center = center.add(pos) }.also { println("Center: ${it.path.center}") }
+                .rotation { ParticleRotation(it.center.add(pos), it.quat) }
         }
         ParticleUtils.spawnParticles(
             world, move, delay, particleDelay
