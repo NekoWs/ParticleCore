@@ -11,7 +11,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
-import work.nekow.particlecore.utils.ParticleRotation;
 import work.nekow.particlecore.utils.RotationData;
 
 import java.util.ArrayList;
