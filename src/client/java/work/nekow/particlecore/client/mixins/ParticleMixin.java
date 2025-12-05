@@ -2,10 +2,7 @@ package work.nekow.particlecore.client.mixins;
 
 import net.minecraft.client.particle.Particle;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Matrix4f;
-import org.joml.Vector3d;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import org.joml.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -58,7 +55,7 @@ public abstract class ParticleMixin {
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    public void pathTick(CallbackInfo ci) {
+    public void rotateTick(CallbackInfo ci) {
         var self = (Particle)(Object) this;
         if (rotationData == null) {
             var data = ParticleManager.Companion.getData(self);
@@ -70,7 +67,10 @@ public abstract class ParticleMixin {
         var rotation = rotationData.getRotation();
 //        var matrix = rotationData.getMatrix();
         var matrix = new Matrix4f();
-        if (rotation == ParticleRotation.Companion.getUNSET()) return;
+        System.out.println("Rotation: center: " + rotation.getCenter() + " quat: " + rotation.getQuat());
+        if (rotation.getQuat().equals(new Quaternionf())) {
+            return;
+        }
         var pos = toVec3f(x, y, z);
         var quat = rotation.getQuat();
         var center = toVec3f(rotation.getCenter());

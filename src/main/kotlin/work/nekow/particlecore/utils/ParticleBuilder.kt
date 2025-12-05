@@ -54,7 +54,7 @@ class ParticleBuilder {
     /**
      * 粒子旋转
      */
-    var rotation: ParticleRotation = ParticleRotation.UNSET
+    var rotation: ParticleRotation = ParticleRotation()
 
     /**
      * 颜色
