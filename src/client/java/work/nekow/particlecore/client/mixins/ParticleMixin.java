@@ -66,7 +66,6 @@ public abstract class ParticleMixin {
         var rotation = rotationData.getRotation();
 //        var matrix = rotationData.getMatrix();
         var matrix = new Matrix4f();
-        System.out.println("Rotation: center: " + rotation.getCenter() + " quat: " + rotation.getQuat());
         if (rotation.getQuat().equals(new Quaternionf())) {
             return;
         }
