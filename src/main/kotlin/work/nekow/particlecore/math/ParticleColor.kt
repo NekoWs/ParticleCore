@@ -13,13 +13,11 @@ data class ParticleColor(
 ) {
     constructor(color: Float) : this(color, color, color)
 
-    fun fixed(): ParticleColor {
-        return ParticleColor(
-            max(min(red, 255F), 0F),
-            max(min(green, 255F), 0F),
-            max(min(blue, 255F), 0F)
-        )
-    }
+    fun fixed(): ParticleColor = ParticleColor(
+        max(min(red, 255F), 0F),
+        max(min(green, 255F), 0F),
+        max(min(blue, 255F), 0F)
+    )
 
     operator fun plus(other: ParticleColor): ParticleColor =
         ParticleColor(red + other.red, green + other.green, blue + other.blue)
