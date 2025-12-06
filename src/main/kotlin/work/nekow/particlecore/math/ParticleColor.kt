@@ -13,13 +13,31 @@ data class ParticleColor(
 ) {
     constructor(color: Float) : this(color, color, color)
 
-    fun subtract(red: Float, green: Float, blue: Float): ParticleColor {
+    fun fixed(): ParticleColor {
         return ParticleColor(
-            max(red - red, 0F),
-            max(green - green, 0F),
-            max(blue - blue, 0F)
+            max(min(red, 255F), 0F),
+            max(min(green, 255F), 0F),
+            max(min(blue, 255F), 0F)
         )
     }
+
+    operator fun plus(other: ParticleColor): ParticleColor =
+        ParticleColor(red + other.red, green + other.green, blue + other.blue).fixed()
+    operator fun minus(other: ParticleColor): ParticleColor =
+        ParticleColor(red - other.red, green - other.green, blue - other.blue).fixed()
+    operator fun times(other: ParticleColor): ParticleColor =
+        ParticleColor(red * other.red, green * other.green, blue * other.blue).fixed()
+    operator fun div(other: ParticleColor): ParticleColor =
+        ParticleColor(red / other.red, green / other.green, blue / other.blue).fixed()
+
+    operator fun plus(num: Number): ParticleColor =
+        ParticleColor(red + num.toFloat(), green + num.toFloat(), blue + num.toFloat()).fixed()
+    operator fun minus(num: Number): ParticleColor =
+        ParticleColor(red - num.toFloat(), green - num.toFloat(), blue - num.toFloat()).fixed()
+    operator fun times(num: Number): ParticleColor =
+        ParticleColor(red * num.toFloat(), green * num.toFloat(), blue * num.toFloat()).fixed()
+    operator fun div(num: Number): ParticleColor =
+        ParticleColor(red / num.toFloat(), green / num.toFloat(), blue / num.toFloat()).fixed()
 
     fun plus(red: Float, green: Float, blue: Float): ParticleColor {
         return ParticleColor(
@@ -28,6 +46,14 @@ data class ParticleColor(
             min(blue + blue, 255F)
         )
     }
+    fun minus(red: Float, green: Float, blue: Float): ParticleColor {
+        return ParticleColor(
+            max(red - red, 0F),
+            max(green - green, 0F),
+            max(blue - blue, 0F)
+        )
+    }
+
 
     companion object {
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleColor> = PacketCodec.of<RegistryByteBuf, ParticleColor>(
@@ -43,6 +69,23 @@ data class ParticleColor(
             }
         )
         val UNSET = ParticleColor(-1f, -1f, -1f)
+
+        /**
+         * 获取线性渐变颜色列表
+         *
+         * @param a 起始颜色
+         * @param b 目标颜色
+         * @param steps 渐变步数
+         *
+         * @return 颜色列表，长度 = steps
+         */
+        fun linearGradient(a: ParticleColor, b: ParticleColor, steps: Int): List<ParticleColor> {
+            val result = mutableListOf<ParticleColor>()
+            for (i in 0 until steps) {
+                result.add(a + (b - a) * i / steps)
+            }
+            return result
+        }
 
         fun fromRGB(red: Int, green: Int, blue: Int): ParticleColor {
             return ParticleColor(red.toFloat(), green.toFloat(), blue.toFloat())
