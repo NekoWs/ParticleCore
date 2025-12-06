@@ -22,38 +22,22 @@ data class ParticleColor(
     }
 
     operator fun plus(other: ParticleColor): ParticleColor =
-        ParticleColor(red + other.red, green + other.green, blue + other.blue).fixed()
+        ParticleColor(red + other.red, green + other.green, blue + other.blue)
     operator fun minus(other: ParticleColor): ParticleColor =
-        ParticleColor(red - other.red, green - other.green, blue - other.blue).fixed()
+        ParticleColor(red - other.red, green - other.green, blue - other.blue)
     operator fun times(other: ParticleColor): ParticleColor =
-        ParticleColor(red * other.red, green * other.green, blue * other.blue).fixed()
+        ParticleColor(red * other.red, green * other.green, blue * other.blue)
     operator fun div(other: ParticleColor): ParticleColor =
-        ParticleColor(red / other.red, green / other.green, blue / other.blue).fixed()
+        ParticleColor(red / other.red, green / other.green, blue / other.blue)
 
     operator fun plus(num: Number): ParticleColor =
-        ParticleColor(red + num.toFloat(), green + num.toFloat(), blue + num.toFloat()).fixed()
+        ParticleColor(red + num.toFloat(), green + num.toFloat(), blue + num.toFloat())
     operator fun minus(num: Number): ParticleColor =
-        ParticleColor(red - num.toFloat(), green - num.toFloat(), blue - num.toFloat()).fixed()
+        ParticleColor(red - num.toFloat(), green - num.toFloat(), blue - num.toFloat())
     operator fun times(num: Number): ParticleColor =
-        ParticleColor(red * num.toFloat(), green * num.toFloat(), blue * num.toFloat()).fixed()
+        ParticleColor(red * num.toFloat(), green * num.toFloat(), blue * num.toFloat())
     operator fun div(num: Number): ParticleColor =
-        ParticleColor(red / num.toFloat(), green / num.toFloat(), blue / num.toFloat()).fixed()
-
-    fun plus(red: Float, green: Float, blue: Float): ParticleColor {
-        return ParticleColor(
-            min(red + red, 255F),
-            min(green + green, 255F),
-            min(blue + blue, 255F)
-        )
-    }
-    fun minus(red: Float, green: Float, blue: Float): ParticleColor {
-        return ParticleColor(
-            max(red - red, 0F),
-            max(green - green, 0F),
-            max(blue - blue, 0F)
-        )
-    }
-
+        ParticleColor(red / num.toFloat(), green / num.toFloat(), blue / num.toFloat())
 
     companion object {
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleColor> = PacketCodec.of<RegistryByteBuf, ParticleColor>(
