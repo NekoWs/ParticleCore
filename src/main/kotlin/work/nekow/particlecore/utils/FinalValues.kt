@@ -23,7 +23,7 @@ class FinalValues(
             green = color.green,
             blue = color.blue,
             light = light,
-            prefix = arrayListOf("velocity", "")
+            prefix = arrayListOf("vx", "vy", "vz", "cr", "cg", "cb", "light")
         )
     }
     companion object {

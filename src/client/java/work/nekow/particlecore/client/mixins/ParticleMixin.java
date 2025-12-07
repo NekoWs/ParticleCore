@@ -82,15 +82,8 @@ public abstract class ParticleMixin {
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
-    public void tick(CallbackInfo ci) {
+    public void finalValuesTick(CallbackInfo ci) {
         Particle self = (Particle)(Object) this;
-        if (!ParticleManager.Companion.hasParticle(self)) {
-            return;
-        }
-        if (age++ >= maxAge) {
-            markDead();
-            return;
-        }
         if (finalValues == null) {
             var data = ParticleManager.Companion.getData(self);
             if (data != null) {
@@ -102,6 +95,18 @@ public abstract class ParticleMixin {
         if (finalValues != null && finalValues.getActive()) {
             var data = finalValues.toEnvData();
             data.getPrefix().forEach(prefix -> setData(data, prefix));
+        }
+    }
+
+    @Inject(method = "tick", at = @At("HEAD"))
+    public void tick(CallbackInfo ci) {
+        Particle self = (Particle)(Object) this;
+        if (!ParticleManager.Companion.hasParticle(self)) {
+            return;
+        }
+        if (age++ >= maxAge) {
+            markDead();
+            return;
         }
 
         ParticleEnvData data = ParticleManager.Companion.particleTick(
