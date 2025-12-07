@@ -23,22 +23,4 @@ data class ParticleRotation(
             }
         )
     }
-
-    override fun hashCode(): Int {
-        var result = center.hashCode()
-        result = 31 * result + quat.hashCode()
-        return result
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as ParticleRotation
-
-        if (center != other.center) return false
-        if (quat != other.quat) return false
-
-        return true
-    }
 }

@@ -19,6 +19,7 @@ class DrawingContext3D {
     private var position = Point3d.ZERO
     private var matrix = Matrix4f()
     private val matrixStack = mutableListOf<Matrix4f>()
+    private var pointModifier: ParticleBuilder.() -> Unit = {}
 
     // ====== 变换操作 ======
 
@@ -140,6 +141,11 @@ class DrawingContext3D {
 
     // ====== 点操作 ======
 
+    fun pointModifier(pointModifier: ParticleBuilder.() -> Unit = {}): DrawingContext3D {
+        this.pointModifier = pointModifier
+        return this
+    }
+
     fun point(x: Double, y: Double, z: Double): DrawingContext3D {
         val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
         vec.mul(matrix)
@@ -147,10 +153,12 @@ class DrawingContext3D {
         pos.mul(matrix)
         val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
         val pos3d = Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
-        points.add(
-            pointStyle.clone()
-                .pos(vec3d)
-                .rotation { ParticleRotation(it.center.add(pos3d), it.quat) }
+        points.add(pointStyle.clone()
+            .pos(vec3d)
+            .rotation {
+                ParticleRotation(it.center.add(pos3d), it.quat)
+            }
+            .apply(pointModifier)
         )
         return this
     }
