@@ -81,7 +81,7 @@ data class ParticleEnv(
 
     companion object {
         private val caches = Collections.synchronizedMap(
-            object : java.util.LinkedHashMap<EnvData, HashMap<Int, ParticleEnvData>>(16, 0.75f, true) {
+            object : LinkedHashMap<EnvData, HashMap<Int, ParticleEnvData>>(16, 0.75f, true) {
                 override fun removeEldestEntry(eldest: MutableMap.MutableEntry<EnvData, HashMap<Int, ParticleEnvData>>): Boolean {
                     return size > MAX_CACHE_SIZE
                 }

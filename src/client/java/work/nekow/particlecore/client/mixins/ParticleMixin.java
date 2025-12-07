@@ -101,9 +101,7 @@ public abstract class ParticleMixin {
         }
         if (finalValues.getActive()) {
             var data = finalValues.toEnvData();
-            data.getPrefix().forEach(prefix -> {
-                setData(data, prefix);
-            });
+            data.getPrefix().forEach(prefix -> setData(data, prefix));
             return;
         }
 
