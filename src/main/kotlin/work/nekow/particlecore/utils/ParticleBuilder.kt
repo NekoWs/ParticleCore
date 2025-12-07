@@ -64,7 +64,7 @@ class ParticleBuilder {
     /**
      * 固定值设置
      */
-    var final: FinalValues = FinalValues.UNSET
+    var final: FinalValues = FinalValues.UNSET.clone()
 
     /**
      * 缩放
