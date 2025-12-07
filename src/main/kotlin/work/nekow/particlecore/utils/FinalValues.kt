@@ -32,12 +32,13 @@ class FinalValues(
                 buf.writeVec3d(packet.velocity)
                 ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeInt(packet.light)
+                buf.writeBoolean(packet.active)
             }, { buf ->
                 FinalValues(
                     buf.readVec3d(),
                     ParticleColor.PACKET_CODEC.decode(buf),
                     buf.readInt()
-                )
+                ).active(buf.readBoolean())
             }
         )
         val UNSET = FinalValues().active(false)

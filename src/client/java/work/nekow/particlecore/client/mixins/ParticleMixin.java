@@ -99,10 +99,9 @@ public abstract class ParticleMixin {
                 finalValues = FinalValues.Companion.getUNSET();
             }
         }
-        if (finalValues.getActive()) {
+        if (finalValues != null && finalValues.getActive()) {
             var data = finalValues.toEnvData();
             data.getPrefix().forEach(prefix -> setData(data, prefix));
-            return;
         }
 
         ParticleEnvData data = ParticleManager.Companion.particleTick(
