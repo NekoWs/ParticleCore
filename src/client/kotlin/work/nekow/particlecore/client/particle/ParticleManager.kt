@@ -14,6 +14,9 @@ import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
+import work.nekow.particlecore.utils.FinalValues
+import work.nekow.particlecore.utils.ParticleEnv
+import work.nekow.particlecore.utils.ParticleEnvData
 import work.nekow.particlecore.utils.RotationData
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -34,7 +37,8 @@ class ParticleManager {
         val rotationData: RotationData,
         var env: ParticleEnv?,
         var world: World?,
-        val maxAge: Int = age
+        val maxAge: Int = age,
+        val final: FinalValues
     )
     companion object {
         val tickParticles = LinkedList<MutableList<ParticleSpawnData>>()
@@ -385,7 +389,8 @@ class ParticleManager {
                 world = client.world,
                 age = data.age,
                 color = data.color,
-                rotationData = RotationData(data.rotation, Matrix4f())
+                rotationData = RotationData(data.rotation, Matrix4f()),
+                final = data.final
             )
 
             particleData[particle] = currentData

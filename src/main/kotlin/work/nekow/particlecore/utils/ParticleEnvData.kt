@@ -1,4 +1,4 @@
-package work.nekow.particlecore.client.particle
+package work.nekow.particlecore.utils
 
 import net.minecraft.util.math.Vec3d
 

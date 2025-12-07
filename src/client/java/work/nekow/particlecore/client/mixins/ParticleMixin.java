@@ -9,8 +9,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import work.nekow.particlecore.client.particle.ParticleEnvData;
 import work.nekow.particlecore.client.particle.ParticleManager;
+import work.nekow.particlecore.utils.FinalValues;
+import work.nekow.particlecore.utils.ParticleEnvData;
 import work.nekow.particlecore.utils.RotationData;
 
 import java.util.ArrayList;
@@ -41,15 +42,13 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
-    @Unique
-    private RotationData rotationData = null;
+    @Unique private FinalValues finalValues = null;
+    @Unique private RotationData rotationData = null;
 
-    @Unique
-    private Vector3f toVec3f(double x, double y, double z) {
+    @Unique private Vector3f toVec3f(double x, double y, double z) {
         return new Vector3f((float) x, (float) y, (float) z);
     }
-    @Unique
-    private Vector3f toVec3f(Vec3d vec3d) {
+    @Unique private Vector3f toVec3f(Vec3d vec3d) {
         return toVec3f(vec3d.x, vec3d.y, vec3d.z);
     }
 
@@ -90,6 +89,21 @@ public abstract class ParticleMixin {
         }
         if (age++ >= maxAge) {
             markDead();
+            return;
+        }
+        if (finalValues == null) {
+            var data = ParticleManager.Companion.getData(self);
+            if (data != null) {
+                finalValues = data.getFinal();
+            } else {
+                finalValues = FinalValues.Companion.getUNSET();
+            }
+        }
+        if (finalValues.getActive()) {
+            var data = finalValues.toEnvData();
+            data.getPrefix().forEach(prefix -> {
+                setData(data, prefix);
+            });
             return;
         }
 

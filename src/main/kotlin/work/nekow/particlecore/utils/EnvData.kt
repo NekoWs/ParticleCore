@@ -1,4 +1,4 @@
-package work.nekow.particlecore.client.particle
+package work.nekow.particlecore.utils
 
 import com.ezylang.evalex.data.EvaluationValue
 

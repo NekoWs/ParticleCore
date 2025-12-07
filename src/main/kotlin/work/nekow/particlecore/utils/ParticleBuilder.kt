@@ -62,6 +62,11 @@ class ParticleBuilder {
     var color: ParticleColor = ParticleColor.UNSET
 
     /**
+     * 固定值设置
+     */
+    var final: FinalValues = FinalValues.UNSET
+
+    /**
      * 缩放
      */
     var scale: Double = 1.0
@@ -78,6 +83,7 @@ class ParticleBuilder {
                 ParticleRotation.PACKET_CODEC.encode(buf, packet.rotation)
                 ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeDouble(packet.scale)
+                FinalValues.PACKET_CODEC.encode(buf, packet.final)
             }, { buf ->
                 ParticleBuilder()
                     .type(ParticleTypes.PACKET_CODEC.decode(buf))
@@ -90,6 +96,7 @@ class ParticleBuilder {
                     .rotation(ParticleRotation.PACKET_CODEC.decode(buf))
                     .color(ParticleColor.PACKET_CODEC.decode(buf))
                     .scale(buf.readDouble())
+                    .final(FinalValues.PACKET_CODEC.decode(buf))
             }
         )
 
@@ -180,6 +187,25 @@ class ParticleBuilder {
         this.scale = scale
         return this
     }
+    fun final(final: FinalValues): ParticleBuilder {
+        this.final = final
+        return this
+    }
+    fun final(velocity: Vec3d): ParticleBuilder {
+        this.final = FinalValues(velocity, final.color, final.light)
+        this.final.active(true)
+        return this
+    }
+    fun final(color: ParticleColor): ParticleBuilder {
+        this.final = FinalValues(final.velocity, color, final.light)
+        this.final.active(true)
+        return this
+    }
+    fun final(light: Int): ParticleBuilder {
+        this.final = FinalValues(final.velocity, final.color, light)
+        this.final.active(true)
+        return this
+    }
 
     fun clone(): ParticleBuilder {
         return ParticleBuilder()
@@ -193,6 +219,7 @@ class ParticleBuilder {
             .rotation(rotation)
             .color(color)
             .scale(scale)
+            .final(final)
     }
 
     /**

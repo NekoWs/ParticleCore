@@ -4,6 +4,7 @@ import com.ezylang.evalex.data.EvaluationValue
 import net.minecraft.particle.ParticleEffect
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.math.ParticleColor
+import work.nekow.particlecore.utils.FinalValues
 import work.nekow.particlecore.utils.ParticleBuilder
 import work.nekow.particlecore.utils.ParticleRotation
 
@@ -18,7 +19,8 @@ data class ParticleSpawnData(
     val args: HashMap<String, EvaluationValue> = hashMapOf(),
     val rotation: ParticleRotation = ParticleRotation(),
     val color: ParticleColor = ParticleColor.UNSET,
-    val scale: Double = 1.0
+    val scale: Double = 1.0,
+    val final: FinalValues = FinalValues.UNSET
 ) {
     companion object {
         fun fromBuilder(
@@ -37,7 +39,8 @@ data class ParticleSpawnData(
                 args = args,
                 rotation = builder.rotation,
                 color = builder.color,
-                scale = builder.scale
+                scale = builder.scale,
+                final = builder.final
             )
         }
     }
