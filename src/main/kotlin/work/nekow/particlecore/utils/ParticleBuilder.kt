@@ -192,18 +192,15 @@ class ParticleBuilder {
         return this
     }
     fun final(velocity: Vec3d): ParticleBuilder {
-        this.final = FinalValues(velocity, final.color, final.light)
-        this.final.active(true)
+        this.final.active(true).velocity(velocity)
         return this
     }
     fun final(color: ParticleColor): ParticleBuilder {
-        this.final = FinalValues(final.velocity, color, final.light)
-        this.final.active(true)
+        this.final.active(true).color(color)
         return this
     }
     fun final(light: Int): ParticleBuilder {
-        this.final = FinalValues(final.velocity, final.color, light)
-        this.final.active(true)
+        this.final.active(true).light(light)
         return this
     }
 
@@ -219,7 +216,7 @@ class ParticleBuilder {
             .rotation(rotation)
             .color(color)
             .scale(scale)
-            .final(final)
+            .final(final.clone())
     }
 
     /**
