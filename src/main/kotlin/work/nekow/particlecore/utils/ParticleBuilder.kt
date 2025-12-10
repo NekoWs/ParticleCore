@@ -160,23 +160,16 @@ class ParticleBuilder {
     fun buildExp(): String {
         return this.expression.build()
     }
-    fun rotation(
-        quat: Quaternionf = Quaternionf(),
-        center: Vec3d = Vec3d.ZERO,
-    ): ParticleBuilder {
-        rotation = ParticleRotation(center, quat)
+    fun rotation(block: ParticleRotation.() -> Unit): ParticleBuilder {
+        rotation.apply(block)
         return this
     }
     fun rotationQuat(block: Quaternionf.() -> Unit): ParticleBuilder {
         rotation.quat.apply(block)
         return this
     }
-    fun rotation(rotation: ParticleRotation): ParticleBuilder {
+    fun rotation(rotation: ParticleRotation = ParticleRotation()): ParticleBuilder {
         this.rotation = rotation
-        return this
-    }
-    fun rotation(block: (ParticleRotation) -> ParticleRotation): ParticleBuilder {
-        rotation = block(rotation)
         return this
     }
     fun color(color: ParticleColor): ParticleBuilder {
@@ -213,7 +206,7 @@ class ParticleBuilder {
             .age(age)
             .count(count)
             .expression(expression)
-            .rotation(rotation)
+            .rotation(rotation.clone())
             .color(color)
             .scale(scale)
             .final(final.clone())

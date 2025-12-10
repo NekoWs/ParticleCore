@@ -42,15 +42,19 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
+    @Shadow
+    public abstract void move(double dx, double dy, double dz);
+
     @Unique private FinalValues finalValues = null;
     @Unique private RotationData rotationData = null;
 
-    @Unique private Vector3f toVec3f(double x, double y, double z) {
+    @Unique private Vector3f vec3f(double x, double y, double z) {
         return new Vector3f((float) x, (float) y, (float) z);
     }
-    @Unique private Vector3f toVec3f(Vec3d vec3d) {
-        return toVec3f(vec3d.x, vec3d.y, vec3d.z);
+    @Unique private Vector3f vec3f(Vec3d vec3d) {
+        return vec3f(vec3d.x, vec3d.y, vec3d.z);
     }
+    @Unique private Vector3f vec3f() { return new Vector3f(); }
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void rotateTick(CallbackInfo ci) {
@@ -63,22 +67,24 @@ public abstract class ParticleMixin {
         }
         if (rotationData == null) return;
         var rotation = rotationData.getRotation();
-//        var matrix = rotationData.getMatrix();
-        var matrix = new Matrix4f();
-        if (rotation.getQuat().equals(new Quaternionf())) {
+        var quat = rotation.getQuat();
+        if (quat.equals(new Quaternionf())) {
             return;
         }
-        var pos = toVec3f(x, y, z);
-        var quat = rotation.getQuat();
-        var center = toVec3f(rotation.getCenter());
+        var local = rotation.getLocal();
+        var center = vec3f(rotation.getCenter());
 
-        matrix.translate(center)
-                .rotate(quat)
-                .translate(center.negate());
-
-        var newPos = pos.mulPosition(matrix);
-        var vec = newPos.sub(toVec3f(x, y, z));
-        setVelocity(vec.x, vec.y, vec.z);
+        var pos = vec3f(x, y, z);
+        var relativePos = center.sub(pos);
+        var inverse = new Quaternionf(local).conjugate();
+        var finalRot = new Quaternionf(local)
+                .mul(quat)
+                .mul(inverse);
+        var rotated = relativePos.rotate(finalRot, vec3f())
+                .add(center);
+        var vector = relativePos.sub(rotated.sub(center, vec3f()), vec3f());
+//        move(rotated.x, rotated.y, rotated.z);
+        setVelocity(vector.x, vector.y, vector.z);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))

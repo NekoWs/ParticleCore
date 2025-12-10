@@ -4,12 +4,10 @@ import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
 import org.joml.Quaternionf
 import org.joml.Vector3f
-import org.joml.Vector4f
 import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
 import work.nekow.particlecore.math.FunctionPoints
 import work.nekow.particlecore.utils.ParticleBuilder
-import work.nekow.particlecore.utils.ParticleRotation
 import kotlin.math.*
 
 @Suppress("unused")
@@ -146,17 +144,23 @@ class DrawingContext3D {
         return this
     }
 
+    fun Vector3f.vec3d(): Vec3d = Vec3d(
+        this.x.toDouble(),
+        this.y.toDouble(),
+        this.z.toDouble()
+    )
+
     fun point(x: Double, y: Double, z: Double): DrawingContext3D {
-        val vec = Vector4f(x.toFloat(), y.toFloat(), z.toFloat(), 1.0f)
-        vec.mul(matrix)
-        val pos = Vector4f(position.x.toFloat(), position.y.toFloat(), position.z.toFloat(), 1.0f)
-        pos.mul(matrix)
-        val vec3d = Vec3d(vec.x.toDouble(), vec.y.toDouble(), vec.z.toDouble())
-        val pos3d = Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
+        val vec3f = Vector3f(x.toFloat(), y.toFloat(), z.toFloat())
+            .mulPosition(matrix)  // 绘制的点应用于 Matrix
+        val pos3f = Vector3f(position.x.toFloat(), position.y.toFloat(), position.z.toFloat())
+            .mulPosition(matrix)  // 当前点应用于 Matrix
+        val matrixRotation = matrix.getNormalizedRotation(Quaternionf())
         points.add(pointStyle.clone()
-            .pos(vec3d)
+            .pos(vec3f.vec3d())
             .rotation {
-                ParticleRotation(it.center.add(pos3d), it.quat)
+                center(pos3f.vec3d())
+                local(matrixRotation)
             }
             .apply(pointModifier)
         )
