@@ -42,6 +42,9 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
+    @Shadow
+    public abstract void move(double dx, double dy, double dz);
+
     @Unique private FinalValues finalValues = null;
     @Unique private RotationData rotationData = null;
 
@@ -79,7 +82,7 @@ public abstract class ParticleMixin {
                 .mul(inverse);
         var rotated = relativePos.rotate(finalRot, vec3f())
                 .add(center);
-        var vector = relativePos.sub(rotated.sub(center, vec3f()), vec3f());
+        var vector = relativePos.sub(rotated.sub(center));
 //        move(rotated.x, rotated.y, rotated.z);
         setVelocity(vector.x, vector.y, vector.z);
     }
@@ -92,7 +95,7 @@ public abstract class ParticleMixin {
             if (data != null) {
                 finalValues = data.getFinal();
             } else {
-                finalValues = FinalValues.Companion.getUNSET();
+                finalValues = FinalValues.Companion.identity();
             }
         }
         if (finalValues != null && finalValues.getActive()) {

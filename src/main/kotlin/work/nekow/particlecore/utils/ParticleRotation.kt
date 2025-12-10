@@ -7,9 +7,9 @@ import org.joml.Quaternionf
 
 @Suppress("unused")
 data class ParticleRotation(
-    var center: Vec3d = Vec3d.ZERO,
-    var quat: Quaternionf = Quaternionf(),
-    var local: Quaternionf = Quaternionf(),
+    var center: Vec3d,
+    var quat: Quaternionf,
+    var local: Quaternionf,
 ) {
     fun center(center: Vec3d): ParticleRotation {
         this.center = center
@@ -31,6 +31,9 @@ data class ParticleRotation(
         )
     }
     companion object {
+        fun identity(): ParticleRotation = ParticleRotation(
+            Vec3d.ZERO, Quaternionf(), Quaternionf()
+        )
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleRotation> = PacketCodec.of<RegistryByteBuf, ParticleRotation>(
             { packet, buf ->
                 buf.writeVec3d(packet.center)

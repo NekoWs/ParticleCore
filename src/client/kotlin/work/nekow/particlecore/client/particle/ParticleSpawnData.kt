@@ -17,10 +17,10 @@ data class ParticleSpawnData(
     val id: Long,
     val expression: String,
     val args: HashMap<String, EvaluationValue> = hashMapOf(),
-    val rotation: ParticleRotation = ParticleRotation(),
+    val rotation: ParticleRotation = ParticleRotation.identity(),
     val color: ParticleColor = ParticleColor.UNSET,
     val scale: Double = 1.0,
-    val final: FinalValues = FinalValues.UNSET
+    val final: FinalValues = FinalValues.identity()
 ) {
     companion object {
         fun fromBuilder(

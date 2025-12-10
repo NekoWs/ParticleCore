@@ -60,6 +60,8 @@ data class FinalValues(
         )
     }
     companion object {
+        fun identity(): FinalValues = FinalValues().active(false)
+
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, FinalValues> = PacketCodec.of<RegistryByteBuf, FinalValues>(
             { packet, buf ->
                 buf.writeVec3d(packet.velocity)
@@ -87,6 +89,5 @@ data class FinalValues(
                 )
             }
         )
-        val UNSET = FinalValues().active(false)
     }
 }

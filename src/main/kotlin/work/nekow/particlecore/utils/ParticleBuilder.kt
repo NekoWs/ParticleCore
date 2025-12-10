@@ -54,7 +54,7 @@ class ParticleBuilder {
     /**
      * 粒子旋转
      */
-    var rotation: ParticleRotation = ParticleRotation()
+    var rotation: ParticleRotation = ParticleRotation.identity()
 
     /**
      * 颜色
@@ -64,7 +64,7 @@ class ParticleBuilder {
     /**
      * 固定值设置
      */
-    var final: FinalValues = FinalValues.UNSET.clone()
+    var final: FinalValues = FinalValues.identity()
 
     /**
      * 缩放
@@ -168,7 +168,7 @@ class ParticleBuilder {
         rotation.quat.apply(block)
         return this
     }
-    fun rotation(rotation: ParticleRotation = ParticleRotation()): ParticleBuilder {
+    fun rotation(rotation: ParticleRotation = ParticleRotation.identity()): ParticleBuilder {
         this.rotation = rotation
         return this
     }
