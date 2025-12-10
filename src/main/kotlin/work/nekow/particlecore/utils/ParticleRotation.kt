@@ -25,7 +25,7 @@ data class ParticleRotation(
     }
     fun clone(): ParticleRotation {
         return ParticleRotation(
-            Vec3d.ZERO,
+            center,
             Quaternionf(quat),
             Quaternionf(local)
         )
