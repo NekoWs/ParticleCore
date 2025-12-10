@@ -42,9 +42,6 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
-    @Shadow
-    public abstract void move(double dx, double dy, double dz);
-
     @Unique private FinalValues finalValues = null;
     @Unique private RotationData rotationData = null;
 
