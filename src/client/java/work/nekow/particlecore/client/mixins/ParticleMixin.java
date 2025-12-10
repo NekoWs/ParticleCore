@@ -42,9 +42,6 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
-    @Shadow
-    public abstract void move(double dx, double dy, double dz);
-
     @Unique private FinalValues finalValues = null;
     @Unique private RotationData rotationData = null;
 
@@ -83,7 +80,6 @@ public abstract class ParticleMixin {
         var rotated = relativePos.rotate(finalRot, vec3f())
                 .add(center);
         var vector = relativePos.sub(rotated.sub(center));
-//        move(rotated.x, rotated.y, rotated.z);
         setVelocity(vector.x, vector.y, vector.z);
     }
 
