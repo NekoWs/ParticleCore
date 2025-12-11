@@ -6,6 +6,8 @@ import org.joml.Quaternionf
 import org.joml.Vector3f
 import work.nekow.particlecore.canvas.utils.ParticleBuilders
 import work.nekow.particlecore.canvas.utils.Point3d
+import work.nekow.particlecore.math.FourierTerm
+import work.nekow.particlecore.math.FourierUtils
 import work.nekow.particlecore.math.FunctionPoints
 import work.nekow.particlecore.utils.ParticleBuilder
 import kotlin.math.*
@@ -464,6 +466,24 @@ class DrawingContext3D {
     ): DrawingContext3D {
         FunctionPoints(function, range, step).points.forEach {
             point(Point3d(it))
+        }
+        return this
+    }
+
+    /**
+     * 使用傅里叶级数绘制图像
+     * 生成于 X Z 上
+     */
+    fun fourier(
+        terms: List<FourierTerm>,
+        duration: Double,
+        timeStep: Double,
+        scale: Double = 1.0
+    ): DrawingContext3D {
+        FourierUtils.fourierPoints(
+            terms, duration, timeStep, scale
+        ).forEach {
+            point(it.x, 0.0, it.y)
         }
         return this
     }
