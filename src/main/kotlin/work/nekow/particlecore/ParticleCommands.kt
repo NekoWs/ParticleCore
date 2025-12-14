@@ -16,7 +16,7 @@ import work.nekow.particlecore.utils.ParticleUtils
 class ParticleCommands {
     companion object {
         fun init() {
-            CommandRegistrationCallback.EVENT.register { dispatcher, access, env ->
+            CommandRegistrationCallback.EVENT.register { dispatcher, access, _ ->
                 dispatcher.register(literal("particlex").then(
                     argument("particle", ParticleEffectArgumentType.particleEffect(access)).then(
                     argument("particle_data", NbtCompoundArgumentType.nbtCompound()).then(
@@ -53,10 +53,6 @@ class ParticleCommands {
 
         fun particlex(context: CommandContext<ServerCommandSource>): Int {
             executor(context, "particlex")
-            return 1
-        }
-        fun fourierp(context: CommandContext<ServerCommandSource>): Int {
-            executor(context, "fourierp")
             return 1
         }
         fun functionp(context: CommandContext<ServerCommandSource>): Int {
