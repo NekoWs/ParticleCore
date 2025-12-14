@@ -10,6 +10,7 @@ data class FinalValues(
     var velocity: Vec3d = Vec3d.ZERO,
     var color: ParticleColor = ParticleColor.UNSET,
     var light: Int = 0,
+    var vm: Float = 1F,
     var prefix: MutableSet<String> = mutableSetOf(),
     var active: Boolean = true
 ) {
@@ -36,6 +37,12 @@ data class FinalValues(
         return this
     }
 
+    fun vm(vm: Float): FinalValues {
+        this.vm = vm
+        this.prefix.add("vm")
+        return this
+    }
+
     fun clone(): FinalValues {
         val prefix = mutableSetOf<String>(
             *prefix.toTypedArray(),
@@ -44,6 +51,7 @@ data class FinalValues(
             velocity,
             color,
             light,
+            vm,
             prefix,
             active
         )
@@ -56,17 +64,19 @@ data class FinalValues(
             green = color.green,
             blue = color.blue,
             light = light,
+            vm = vm,
             prefix = arrayListOf(*prefix.toTypedArray())
         )
     }
     companion object {
         fun identity(): FinalValues = FinalValues().active(false)
 
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, FinalValues> = PacketCodec.of<RegistryByteBuf, FinalValues>(
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, FinalValues> = PacketCodec.of(
             { packet, buf ->
                 buf.writeVec3d(packet.velocity)
                 ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeInt(packet.light)
+                buf.writeFloat(packet.vm)
                 buf.writeBoolean(packet.active)
                 buf.writeInt(packet.prefix.size)
                 packet.prefix.forEach { buf.writeString(it) }
@@ -74,6 +84,7 @@ data class FinalValues(
                 val velocity = buf.readVec3d()
                 val color = ParticleColor.PACKET_CODEC.decode(buf)
                 val light = buf.readInt()
+                val vm = buf.readFloat()
                 val active = buf.readBoolean()
                 val size = buf.readInt()
                 val prefix = mutableListOf<String>()
@@ -84,6 +95,7 @@ data class FinalValues(
                     velocity = velocity,
                     color = color,
                     light = light,
+                    vm = vm,
                     active = active,
                     prefix = mutableSetOf(*prefix.toTypedArray())
                 )

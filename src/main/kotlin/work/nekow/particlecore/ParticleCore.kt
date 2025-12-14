@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.network.*
+import work.nekow.particlecore.utils.ParticleUtils
 
 class ParticleCore : ModInitializer {
     companion object {
@@ -38,6 +39,8 @@ class ParticleCore : ModInitializer {
         PacketVelocityParticleS2C.init()
         PacketRemoveTickParticlesS2C.init()
         PacketFunctionParticlesS2C.init()
+
+        ParticleUtils.init()
 
         ParticleCommands.init()
     }

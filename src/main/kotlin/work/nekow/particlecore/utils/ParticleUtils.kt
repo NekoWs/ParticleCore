@@ -13,9 +13,9 @@ import kotlin.math.round
 class ParticleUtils {
     companion object {
         private val indexes = ConcurrentHashMap<Long, Int>()
-        private var idCounter = AtomicLong(0)
+        private val idCounter = AtomicLong(0)
 
-        // 最大显示距离
+        // 最大显示距离 (32(Blocks) * 16(Chunks))
         const val MAX_SHOW_DISTANCE = 32 * 16
 
         fun nextId(age: Int, delay: Double = 0.0): Long {

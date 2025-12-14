@@ -48,7 +48,7 @@ class ParticleManager {
         val ids = ConcurrentHashMap<Long, ConcurrentLinkedQueue<Particle>>()
         val particles = mutableListOf<Particle>()
 
-        private val posPool = SynchronizedPool<BlockPos.Mutable>(128) { BlockPos.Mutable() }
+        private val posPool = SynchronizedPool(128) { BlockPos.Mutable() }
         private fun acquireMutablePos() = posPool.acquire() ?: BlockPos.Mutable()
         private fun releaseMutablePos(pos: BlockPos.Mutable) = posPool.release(pos)
 

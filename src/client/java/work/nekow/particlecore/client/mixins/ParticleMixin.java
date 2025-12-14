@@ -42,6 +42,8 @@ public abstract class ParticleMixin {
     @Shadow
     public abstract void setVelocity(double velocityX, double velocityY, double velocityZ);
 
+    @Shadow
+    protected float velocityMultiplier;
     @Unique private FinalValues finalValues = null;
     @Unique private RotationData rotationData = null;
 
@@ -116,7 +118,9 @@ public abstract class ParticleMixin {
             new ParticleEnvData(
                 new Vec3d(velocityX, velocityY, velocityZ),
                 new Vec3d(x, y, z),
-                red, green, blue, alpha, angle, new ArrayList<>(), light, gravityStrength, 1F
+                red, green, blue, alpha, angle,
+                new ArrayList<>(), light, gravityStrength,
+                1F, velocityMultiplier
             )
         );
         ArrayList<String> prefixList = data.getPrefix();
@@ -151,6 +155,7 @@ public abstract class ParticleMixin {
             }
             case "gravity" -> gravityStrength = data.getGravity();
             case "scale" -> scale(data.getScale());
+            case "vm" -> velocityMultiplier = data.getVm();
         }
     }
 }

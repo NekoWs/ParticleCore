@@ -14,6 +14,7 @@ data class ParticleEnvData(
     var light: Int = -1,
     var gravity: Float = 0F,
     var scale: Float = 1F,
+    var vm: Float = 1F
 ) {
     fun clone(): ParticleEnvData {
         return ParticleEnvData(
