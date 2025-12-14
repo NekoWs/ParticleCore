@@ -33,12 +33,10 @@ class ParticleCore : ModInitializer {
 
     override fun onInitialize() {
         PacketParticlesS2C.init()
-        PacketFourierParticleS2C.init()
         PacketMarkDeadS2C.init()
         PacketMoveParticleS2C.init()
         PacketVelocityParticleS2C.init()
         PacketRemoveTickParticlesS2C.init()
-        PacketLineParticlesS2C.init()
         PacketFunctionParticlesS2C.init()
 
         ParticleCommands.init()

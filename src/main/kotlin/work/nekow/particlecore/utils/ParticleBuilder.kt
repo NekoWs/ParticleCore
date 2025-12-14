@@ -16,60 +16,36 @@ import kotlin.jvm.optionals.getOrDefault
 
 @Suppress("unused")
 class ParticleBuilder {
-    /**
-     * 类型
-     */
+    /** 粒子类型 **/
     var type: ParticleEffect = DustParticleEffect(Colors.PURPLE, 1F)
 
-    /**
-     * 位置
-     */
+    /** 粒子位置 **/
     var pos: Vec3d = Vec3d.ZERO
 
-    /**
-     * 向量
-     */
+    /** 粒子初始向量 **/
     var velocity: Vec3d = Vec3d.ZERO
 
-    /**
-     * 随机偏移
-     */
+    /** 粒子生成随机偏移 **/
     var offset: Vec3d = Vec3d.ZERO
 
-    /**
-     * 存在时间
-     */
+    /** 粒子存在时间 **/
     var age: Int = 10
 
-    /**
-     * 数量
-     */
+    /** 粒子生成次数 **/
     var count: Int = 1
 
-    /**
-     * 粒子刻追踪函数（耗能极高）
-     */
+    /** 粒子函数（耗能极高） **/
     var expression: Expressions = Expressions()
 
-    /**
-     * 粒子旋转
-     */
+    /** 粒子每刻旋转程度 **/
     var rotation: ParticleRotation = ParticleRotation.identity()
-
-    /**
-     * 颜色
-     */
-    var color: ParticleColor = ParticleColor.UNSET
-
-    /**
-     * 固定值设置
-     */
+    
+    /** 粒子固定值 **/
     var final: FinalValues = FinalValues.identity()
 
-    /**
-     * 缩放
-     */
+    /** 粒子缩放大小 **/
     var scale: Double = 1.0
+    
     companion object {
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleBuilder> = PacketCodec.of<RegistryByteBuf, ParticleBuilder>(
             { packet, buf ->
@@ -81,7 +57,6 @@ class ParticleBuilder {
                 buf.writeInt(packet.count)
                 buf.writeString(packet.expression.build())
                 ParticleRotation.PACKET_CODEC.encode(buf, packet.rotation)
-                ParticleColor.PACKET_CODEC.encode(buf, packet.color)
                 buf.writeDouble(packet.scale)
                 FinalValues.PACKET_CODEC.encode(buf, packet.final)
             }, { buf ->
@@ -94,7 +69,6 @@ class ParticleBuilder {
                     .count(buf.readInt())
                     .expression(Expressions(buf.readString()))
                     .rotation(ParticleRotation.PACKET_CODEC.decode(buf))
-                    .color(ParticleColor.PACKET_CODEC.decode(buf))
                     .scale(buf.readDouble())
                     .final(FinalValues.PACKET_CODEC.decode(buf))
             }
@@ -173,7 +147,7 @@ class ParticleBuilder {
         return this
     }
     fun color(color: ParticleColor): ParticleBuilder {
-        this.color = color
+        this.final.color = color
         return this
     }
     fun scale(scale: Double): ParticleBuilder {
@@ -207,7 +181,6 @@ class ParticleBuilder {
             .count(count)
             .expression(expression)
             .rotation(rotation.clone())
-            .color(color)
             .scale(scale)
             .final(final.clone())
     }

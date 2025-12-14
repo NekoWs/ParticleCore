@@ -33,7 +33,6 @@ class ParticleManager {
         var pos: Vec3d,
         val id: Long,
         var age: Int,
-        val color: ParticleColor,
         val rotationData: RotationData,
         var env: ParticleEnv?,
         var world: World?,
@@ -298,7 +297,7 @@ class ParticleManager {
         fun tick(client: MinecraftClient) {
             if (tickParticles.isNotEmpty()) {
                 val dataset = tickParticles.pop()
-                addParticlesBulk(ParticlecoreClient.client, dataset)
+                addParticles(ParticlecoreClient.client, dataset)
             }
             val remove = mutableListOf<Particle>()
             particleData.forEach { (particle, data) ->
@@ -307,7 +306,7 @@ class ParticleManager {
                     remove.add(particle)
                     return@forEach
                 }
-                setColor(particle, data.color)
+                setColor(particle, data.final.color)
             }
             if (removeIds.isNotEmpty()) {
                 removeIds.forEach { id ->
@@ -342,8 +341,8 @@ class ParticleManager {
             updateLightPoses.clear()
         }
 
-        private fun addParticlesBulk(client: MinecraftClient, spawnData: List<ParticleSpawnData>) {
-            spawnData.forEach { data ->
+        private fun addParticles(client: MinecraftClient, particles: List<ParticleSpawnData>) {
+            particles.forEach { data ->
                 addParticleInternal(client, data)
             }
         }
@@ -377,7 +376,8 @@ class ParticleManager {
 
             val velocity = data.velocity
             particle.setVelocity(velocity.x, velocity.y, velocity.z)
-            setColor(particle, data.color)
+            setColor(particle, data.final.color)
+
             particle.maxAge = data.age
             particle.scale(data.scale.toFloat())
 
@@ -388,7 +388,6 @@ class ParticleManager {
                 env = null,
                 world = client.world,
                 age = data.age,
-                color = data.color,
                 rotationData = RotationData(data.rotation, Matrix4f()),
                 final = data.final
             )

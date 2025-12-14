@@ -18,9 +18,6 @@ class ParticlecoreClient : ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(PacketParticlesS2C.PAYLOAD_ID,
             PacketParticlesHandler()
         )
-        ClientPlayNetworking.registerGlobalReceiver(PacketFourierParticleS2C.PAYLOAD_ID,
-            FourierParticleHandler()
-        )
         ClientPlayNetworking.registerGlobalReceiver(PacketMarkDeadS2C.PAYLOAD_ID,
             MarkDeadHandler()
         )
@@ -32,9 +29,6 @@ class ParticlecoreClient : ClientModInitializer {
         )
         ClientPlayNetworking.registerGlobalReceiver(PacketRemoveTickParticlesS2C.PAYLOAD_ID,
             RemoveTickParticlesHandler()
-        )
-        ClientPlayNetworking.registerGlobalReceiver(PacketLineParticlesS2C.PAYLOAD_ID,
-            LineParticleHandler()
         )
         ClientPlayNetworking.registerGlobalReceiver(PacketFunctionParticlesS2C.PAYLOAD_ID,
             FunctionParticlesHandler()

@@ -4,11 +4,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.util.math.Vec3d
-import work.nekow.particlecore.exceptions.ParticleException
-import work.nekow.particlecore.math.FourierTerm
 import work.nekow.particlecore.network.*
-import work.nekow.particlecore.network.PacketFourierParticleS2C.FPRotate
-import work.nekow.particlecore.network.PacketFourierParticleS2C.FPScale
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.round
@@ -18,6 +14,9 @@ class ParticleUtils {
     companion object {
         private val indexes = ConcurrentHashMap<Long, Int>()
         private var idCounter = AtomicLong(0)
+
+        // 最大显示距离
+        const val MAX_SHOW_DISTANCE = 32 * 16
 
         fun nextId(age: Int, delay: Double = 0.0): Long {
             val id = idCounter.get()
@@ -51,12 +50,6 @@ class ParticleUtils {
             }
         }
 
-        fun checkBuilder(builder: ParticleBuilder) {
-            if (builder.pos == Vec3d.ZERO) {
-                throw ParticleException("Particle pos is ZERO!")
-            }
-        }
-
         /**
          * 使用发包方式召唤粒子效果
          */
@@ -65,12 +58,15 @@ class ParticleUtils {
             particles: List<ParticleBuilder>,
             delay: Int = 0,
             particleDelay: Double = 0.0
-        ): Long {
+        ): Long? {
+            if (particles.isEmpty()) return null
             val age = particles.maxOfOrNull { it.age } ?: 0
             val id = nextId(age)
             val packet = PacketParticlesS2C(particles, id, delay, particleDelay)
             world.players.forEach {
-                ServerPlayNetworking.send(it, packet)
+                // 取粒子第一个判断距离是否需要发送
+                if (it.pos.distanceTo(particles.first().pos) < MAX_SHOW_DISTANCE)
+                    ServerPlayNetworking.send(it, packet)
             }
             return id
         }
@@ -80,66 +76,7 @@ class ParticleUtils {
             particle: ParticleBuilder,
             delay: Int = 0
         ): Long {
-            return spawnParticles(world, listOf(particle), delay)
-        }
-
-        fun spawnLineParticle(
-            world: ServerWorld,
-            particle: ParticleBuilder,
-            from: Vec3d,
-            to: Vec3d,
-            step: Double = 1.0,
-            delay: Double = 0.0
-        ): Long {
-            checkBuilder(particle)
-            val id = nextId(particle.age, delay)
-            val packet = PacketLineParticlesS2C(
-                particle = particle,
-                from = from,
-                to = to,
-                step = step,
-                delay = delay,
-                id = id,
-            )
-            world.players.forEach {
-                ServerPlayNetworking.send(it, packet)
-            }
-            return id
-        }
-
-        /**
-         * 使用发包方式召唤傅里叶级数粒子效果
-         */
-        fun spawnFourierParticle(
-            world: ServerWorld,
-            particle: ParticleBuilder,
-            duration: Double,
-            timeStep: Double,
-            length: Int,
-            terms: List<FourierTerm>,
-            delay: Double,
-            fscale: FPScale,
-            rotate: FPRotate,
-            particleDelay: Int = 0
-        ): Long {
-            checkBuilder(particle)
-            val id = nextId(particle.age, delay)
-            val packet = PacketFourierParticleS2C(
-                particle = particle,
-                duration = duration,
-                timeStep = timeStep,
-                length = length,
-                terms = terms,
-                id = id,
-                delay = delay,
-                fscale = fscale,
-                rotate = rotate,
-                particleDelay = particleDelay
-            )
-            world.players.forEach {
-                ServerPlayNetworking.send(it, packet)
-            }
-            return id
+            return spawnParticles(world, listOf(particle), delay)!!
         }
 
         fun spawnFunctionParticle(
@@ -150,7 +87,6 @@ class ParticleUtils {
             delay: Double = 0.0,
             range: Pair<Double, Double> = Pair(0.0, 10.0),
         ): Long {
-            checkBuilder(particle)
             val id = nextId(particle.age, delay)
             val packet = PacketFunctionParticlesS2C(
                 particle = particle,
@@ -161,7 +97,8 @@ class ParticleUtils {
                 id = id,
             )
             world.players.forEach {
-                ServerPlayNetworking.send(it, packet)
+                if (it.pos.distanceTo(particle.pos) < MAX_SHOW_DISTANCE)
+                    ServerPlayNetworking.send(it, packet)
             }
             return id
         }
