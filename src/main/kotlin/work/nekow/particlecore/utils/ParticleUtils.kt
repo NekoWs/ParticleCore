@@ -22,7 +22,6 @@ class ParticleUtils {
             particleDelay: Double = 0.0
         ) {
             if (particles.isEmpty()) return
-            val age = particles.maxOfOrNull { it.age } ?: 0
             val packet = ParticlesS2C(particles, delay, particleDelay)
             world.players.forEach {
                 // 取粒子第一个判断距离是否需要发送
