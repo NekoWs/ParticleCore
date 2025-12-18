@@ -13,7 +13,6 @@ data class ParticleSpawnData(
     val velocity: Vec3d,
     val offset: Vec3d,
     val age: Int,
-    val id: Long,
     val expression: String,
     val args: HashMap<String, EvaluationValue> = hashMapOf(),
     val rotation: ParticleRotation = ParticleRotation.identity(),
@@ -23,7 +22,6 @@ data class ParticleSpawnData(
     companion object {
         fun fromBuilder(
             builder: ParticleBuilder,
-            id: Long,
             args: HashMap<String, EvaluationValue> = hashMapOf()
         ): ParticleSpawnData {
             return ParticleSpawnData(
@@ -32,7 +30,6 @@ data class ParticleSpawnData(
                 velocity = builder.velocity,
                 offset = builder.offset,
                 age = builder.age,
-                id = id,
                 expression = builder.expression.build(),
                 args = args,
                 rotation = builder.rotation,

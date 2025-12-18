@@ -6,7 +6,6 @@ import net.minecraft.util.math.Vec3d
 import work.nekow.particlecore.network.ClearDelayParticlesS2C
 import work.nekow.particlecore.network.FunctionParticlesS2C
 import work.nekow.particlecore.network.ParticlesS2C
-import work.nekow.particlecore.utils.ParticleUtils
 
 class ParticleCore : ModInitializer {
     companion object {
@@ -38,8 +37,6 @@ class ParticleCore : ModInitializer {
         ParticlesS2C.init()
         ClearDelayParticlesS2C.init()
         FunctionParticlesS2C.init()
-
-        ParticleUtils.init()
 
         ParticleCommands.init()
     }

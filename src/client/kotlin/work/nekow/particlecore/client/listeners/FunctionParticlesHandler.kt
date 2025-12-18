@@ -26,7 +26,7 @@ class FunctionParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<Function
             val clone = particle.clone()
                 .pos(center.add(point))
             ParticleManager.spawnParticle(
-                ParticleSpawnData.fromBuilder(clone, payload.id),
+                ParticleSpawnData.fromBuilder(clone),
                 floor(ticks.also { ticks += delay }).toInt(),
             )
         }

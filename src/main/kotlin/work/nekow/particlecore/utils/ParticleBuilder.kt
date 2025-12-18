@@ -197,9 +197,8 @@ class ParticleBuilder {
      * 调用 ParticleUtils 中的 spawnParticle 召唤粒子
      *
      * @param world 世界
-     * @return ParticleUtils.spawnParticle
      */
-    fun spawnAt(world: ServerWorld): Long {
-        return ParticleUtils.spawnParticle(world, this)
+    fun spawnAt(world: ServerWorld) {
+        ParticleUtils.spawnParticle(world, this)
     }
 }

@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import work.nekow.particlecore.client.listeners.FunctionParticlesHandler
-import work.nekow.particlecore.client.listeners.PacketParticlesHandler
+import work.nekow.particlecore.client.listeners.ParticlesHandler
 import work.nekow.particlecore.client.listeners.RemoveTickParticlesHandler
 import work.nekow.particlecore.client.particle.ParticleManager
 import work.nekow.particlecore.network.ClearDelayParticlesS2C
@@ -20,7 +20,7 @@ class ParticlecoreClient : ClientModInitializer {
 
     override fun onInitializeClient() {
         ClientPlayNetworking.registerGlobalReceiver(ParticlesS2C.PAYLOAD_ID,
-            PacketParticlesHandler()
+            ParticlesHandler()
         )
         ClientPlayNetworking.registerGlobalReceiver(ClearDelayParticlesS2C.PAYLOAD_ID,
             RemoveTickParticlesHandler()

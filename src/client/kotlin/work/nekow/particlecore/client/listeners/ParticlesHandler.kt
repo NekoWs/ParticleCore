@@ -6,7 +6,7 @@ import work.nekow.particlecore.client.particle.ParticleSpawnData
 import work.nekow.particlecore.network.ParticlesS2C
 import kotlin.math.roundToInt
 
-class PacketParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<ParticlesS2C> {
+class ParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<ParticlesS2C> {
     override fun receive(
         payload: ParticlesS2C,
         context: ClientPlayNetworking.Context
@@ -14,10 +14,7 @@ class PacketParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<ParticlesS
         val particles = payload.particles
         var delay: Double = payload.delay.toDouble()
         particles.forEach { particle ->
-            val data = ParticleSpawnData.fromBuilder(
-                builder = particle,
-                id = payload.id,
-            )
+            val data = ParticleSpawnData.fromBuilder(particle)
             repeat(particle.count) {
                 ParticleManager.spawnParticle(data, delay.roundToInt())
             }
