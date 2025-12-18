@@ -14,6 +14,7 @@ import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
+import work.nekow.particlecore.utils.ParticleBuilder
 import work.nekow.particlecore.utils.ParticleEnv
 import work.nekow.particlecore.utils.ParticleEnvData
 import work.nekow.particlecore.utils.RotationData
@@ -27,7 +28,7 @@ import kotlin.random.Random
 @Suppress("unused")
 class ParticleManager {
     companion object {
-        val delayParticles = LinkedList<MutableList<ParticleSpawnData>>()
+        val delayParticles = LinkedList<MutableList<ParticleBuilder>>()
         val particles = ConcurrentHashMap<Particle, ParticleStatus>()
 
         private val posPool = SynchronizedPool(128) { BlockPos.Mutable() }
@@ -239,7 +240,7 @@ class ParticleManager {
         fun tick(client: MinecraftClient) {
             if (delayParticles.isNotEmpty()) {
                 val dataset = delayParticles.pop()
-                addParticles(ParticlecoreClient.client, dataset)
+                spawnParticles(ParticlecoreClient.client, dataset)
             }
             val remove = mutableListOf<Particle>()
             particles.forEach { (particle, data) ->
@@ -274,7 +275,7 @@ class ParticleManager {
             updateLightPoses.clear()
         }
 
-        private fun addParticles(client: MinecraftClient, particles: List<ParticleSpawnData>) {
+        private fun spawnParticles(client: MinecraftClient, particles: List<ParticleBuilder>) {
             particles.forEach { data ->
                 spawnParticle(client, data)
             }
@@ -290,7 +291,7 @@ class ParticleManager {
          */
         private fun spawnParticle(
             client: MinecraftClient,
-            data: ParticleSpawnData,
+            data: ParticleBuilder,
         ) {
             val offset = data.offset
             val (randX, randY, randZ) = Triple(
@@ -326,7 +327,7 @@ class ParticleManager {
 
             particles[particle] = currentData
 
-            val expression = data.expression
+            val expression = data.expression.build()
             if (expression.isNotEmpty()) {
                 val env = ParticleEnv(
                     expression = expression,
@@ -334,7 +335,7 @@ class ParticleManager {
                     offset = Vec3d(randX, randY, randZ),
                     ticks = 0,
                     center = data.pos,
-                    arguments = data.args,
+                    arguments = data.arguments,
                     age = data.age
                 )
                 currentData.env = env
@@ -353,9 +354,9 @@ class ParticleManager {
         /**
          * 召唤函数粒子
          *
-         * @param data 粒子数据
+         * @param data 粒子构造器
          */
-        fun spawnParticle(data: ParticleSpawnData) {
+        fun spawnParticle(data: ParticleBuilder) {
             spawnParticle(data)
         }
 
@@ -365,7 +366,7 @@ class ParticleManager {
          * @param data 粒子效果参数
          * @param delay 指定刻次数
          */
-        fun spawnParticle(data: ParticleSpawnData, delay: Int = 0) {
+        fun spawnParticle(data: ParticleBuilder, delay: Int = 0) {
             if (delayParticles.size <= delay) {
                 repeat(delay - delayParticles.size + 1) {
                     delayParticles.add(mutableListOf())

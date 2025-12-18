@@ -1,5 +1,6 @@
 package work.nekow.particlecore.utils
 
+import com.ezylang.evalex.data.EvaluationValue
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
@@ -15,37 +16,34 @@ import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
 
 @Suppress("unused")
-class ParticleBuilder {
-    /** 粒子类型 **/
-    var type: ParticleEffect = DustParticleEffect(Colors.PURPLE, 1F)
-
-    /** 粒子位置 **/
-    var pos: Vec3d = Vec3d.ZERO
-
-    /** 粒子初始向量 **/
-    var velocity: Vec3d = Vec3d.ZERO
-
-    /** 粒子生成随机偏移 **/
-    var offset: Vec3d = Vec3d.ZERO
-
-    /** 粒子存在时间 **/
-    var age: Int = 10
-
-    /** 粒子生成次数 **/
-    var count: Int = 1
-
-    /** 粒子函数（耗能极高） **/
-    var expression: Expressions = Expressions()
-
-    /** 粒子每刻旋转程度 **/
-    var rotation: ParticleRotation = ParticleRotation.identity()
-    
-    /** 粒子固定值 **/
-    var final: FinalValues = FinalValues.identity()
-
-    /** 粒子缩放大小 **/
-    var scale: Double = 1.0
-    
+/**
+ * 粒子构造器，包含召唤一个或多个粒子所需的所有参数
+ *
+ * @param type 粒子类型
+ * @param pos 粒子位置
+ * @param velocity 粒子初始向量
+ * @param offset 粒子偏移位置(以中心随机)
+ * @param age 粒子存在时间(ticks)
+ * @param count 粒子数量
+ * @param expression 粒子函数（耗能极高）
+ * @param arguments 粒子函数初始变量
+ * @param rotation 粒子每刻旋转
+ * @param final 粒子固定值(每刻都会进行设置)
+ * @param scale 粒子缩放
+ */
+data class ParticleBuilder(
+    var type: ParticleEffect = DustParticleEffect(Colors.PURPLE, 1F),
+    var pos: Vec3d = Vec3d.ZERO,
+    var velocity: Vec3d = Vec3d.ZERO,
+    var offset: Vec3d = Vec3d.ZERO,
+    var age: Int = 10,
+    var count: Int = 1,
+    var expression: Expressions = Expressions(),
+    var arguments: HashMap<String, EvaluationValue> = hashMapOf(),
+    var rotation: ParticleRotation = ParticleRotation.identity(),
+    var final: FinalValues = FinalValues.identity(),
+    var scale: Double = 1.0,
+) {
     companion object {
         val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleBuilder> = PacketCodec.of(
             { packet, buf ->
@@ -76,7 +74,7 @@ class ParticleBuilder {
 
         /**
          * 将 NbtCompound 转换为 ParticleBuilder
-         * 其中不包含粒子类型 (ParticleEffect)
+         * 其中不包含粒子类型 (ParticleEffect)、旋转 (Rotation)、固定值 (FinalValues)
          *
          * @param nbt NbtCompound
          * @return 读取后的粒子构造器
@@ -126,6 +124,14 @@ class ParticleBuilder {
     }
     fun expression(expression: String): ParticleBuilder {
         return expression(Expressions(expression))
+    }
+    fun argument(argument: HashMap<String, EvaluationValue>): ParticleBuilder {
+        this.arguments = argument
+        return this
+    }
+    fun argument(key: String, value: EvaluationValue): ParticleBuilder {
+        arguments[key] = value
+        return this
     }
     fun modifyExp(modifier: (Expressions) -> (Unit)): ParticleBuilder {
         modifier.invoke(this.expression)
