@@ -38,7 +38,7 @@ data class ParticleColor(
         ParticleColor(red / num.toFloat(), green / num.toFloat(), blue / num.toFloat())
 
     companion object {
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleColor> = PacketCodec.of<RegistryByteBuf, ParticleColor>(
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleColor> = PacketCodec.of(
             { packet, buf ->
                 buf.writeFloat(packet.red)
                 buf.writeFloat(packet.green)

@@ -170,6 +170,14 @@ class ParticleBuilder {
         this.final.active(true).light(light)
         return this
     }
+    fun final(vm: Float): ParticleBuilder {
+        this.final.active(true).vm(vm)
+        return this
+    }
+    fun gravity(gravity: Float): ParticleBuilder {
+        this.final.active(true).gravity(gravity)
+        return this
+    }
 
     fun clone(): ParticleBuilder {
         return ParticleBuilder()

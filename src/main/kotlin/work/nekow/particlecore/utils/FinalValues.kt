@@ -11,6 +11,7 @@ data class FinalValues(
     var color: ParticleColor = ParticleColor.UNSET,
     var light: Int = 0,
     var vm: Float = 1F,
+    var gravity: Float = 0F,
     var prefix: MutableSet<String> = mutableSetOf(),
     var active: Boolean = true
 ) {
@@ -43,6 +44,12 @@ data class FinalValues(
         return this
     }
 
+    fun gravity(gravity: Float): FinalValues {
+        this.gravity = gravity
+        this.prefix.add("gravity")
+        return this
+    }
+
     fun clone(): FinalValues {
         val prefix = mutableSetOf<String>(
             *prefix.toTypedArray(),
@@ -52,6 +59,7 @@ data class FinalValues(
             color,
             light,
             vm,
+            gravity,
             prefix,
             active
         )
@@ -65,6 +73,7 @@ data class FinalValues(
             blue = color.blue,
             light = light,
             vm = vm,
+            gravity = gravity,
             prefix = arrayListOf(*prefix.toTypedArray())
         )
     }
