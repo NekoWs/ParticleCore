@@ -15,7 +15,6 @@ import work.nekow.particlecore.ParticleCore.Companion.getVec3d
 import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
 
-@Suppress("unused")
 /**
  * 粒子构造器，包含召唤一个或多个粒子所需的所有参数
  *
@@ -31,6 +30,7 @@ import kotlin.jvm.optionals.getOrDefault
  * @param final 粒子固定值(每刻都会进行设置)
  * @param scale 粒子缩放
  */
+@Suppress("unused")
 data class ParticleBuilder(
     var type: ParticleEffect = DustParticleEffect(Colors.PURPLE, 1F),
     var pos: Vec3d = Vec3d.ZERO,
