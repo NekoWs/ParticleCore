@@ -14,13 +14,11 @@ import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
-import work.nekow.particlecore.utils.FinalValues
 import work.nekow.particlecore.utils.ParticleEnv
 import work.nekow.particlecore.utils.ParticleEnvData
 import work.nekow.particlecore.utils.RotationData
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.random.Random
@@ -28,25 +26,9 @@ import kotlin.random.Random
 @Environment(EnvType.CLIENT)
 @Suppress("unused")
 class ParticleManager {
-    class ParticleData(
-        var light: Int,
-        var pos: Vec3d,
-        val id: Long,
-        var age: Int,
-        val rotationData: RotationData,
-        var env: ParticleEnv?,
-        var world: World?,
-        val maxAge: Int = age,
-        val final: FinalValues
-    )
     companion object {
-        val tickParticles = LinkedList<MutableList<ParticleSpawnData>>()
-        val removeIds = HashSet<Long>()
-
-        val particleData = ConcurrentHashMap<Particle, ParticleData>()
-
-        val ids = ConcurrentHashMap<Long, ConcurrentLinkedQueue<Particle>>()
-        val particles = mutableListOf<Particle>()
+        val delayParticles = LinkedList<MutableList<ParticleSpawnData>>()
+        val particles = ConcurrentHashMap<Particle, ParticleStatus>()
 
         private val posPool = SynchronizedPool(128) { BlockPos.Mutable() }
         private fun acquireMutablePos() = posPool.acquire() ?: BlockPos.Mutable()
@@ -63,7 +45,7 @@ class ParticleManager {
             lightUpdate.set(true)
 
         fun hasParticle(particle: Particle): Boolean =
-            particleData.containsKey(particle)
+            particles.containsKey(particle)
 
         /**
          * 标记一个需要更新亮度的坐标
@@ -74,22 +56,13 @@ class ParticleManager {
             updateLightPoses.add(pos.asLong())
 
         /**
-         * 通过 ID 获取所有匹配的粒子效果
-         *
-         * @param id ID
-         * @return 粒子列表
-         */
-        fun getParticles(id: Long): ConcurrentLinkedQueue<Particle> =
-            ids[id] ?: ConcurrentLinkedQueue()
-
-        /**
          * 获取粒子数据
          *
          * @param particle 粒子
          * @return 粒子数据
          */
-        fun getData(particle: Particle): ParticleData? =
-            particleData[particle]
+        operator fun get(particle: Particle): ParticleStatus? =
+            particles[particle]
 
         /**
          * 获取粒子位置
@@ -98,7 +71,7 @@ class ParticleManager {
          * @return 粒子位置
          */
         fun getPos(particle: Particle): Vec3d? =
-            getData(particle)?.pos
+            get(particle)?.pos
 
         /**
          * 获取粒子运行数据
@@ -107,16 +80,7 @@ class ParticleManager {
          * @return 粒子运行数据
          */
         fun getEnv(particle: Particle): ParticleEnv? =
-            getData(particle)?.env
-
-        /**
-         * 获取粒子 ID
-         *
-         * @param particle 粒子
-         * @return 粒子 ID
-         */
-        fun getId(particle: Particle): Long? =
-            getData(particle)?.id
+            get(particle)?.env
 
         /**
          * 获取粒子亮度
@@ -125,7 +89,7 @@ class ParticleManager {
          * @return 粒子亮度
          */
         fun getLight(particle: Particle): Int? =
-            getData(particle)?.light
+            get(particle)?.light
 
         /**
          * 设置粒子亮度
@@ -135,7 +99,7 @@ class ParticleManager {
          * @throws NullPointerException 粒子数据不存在
          */
         fun setLight(particle: Particle, light: Int, pos: Vec3d) =
-            getData(particle)?.let { data ->
+            get(particle)?.let { data ->
                 if (data.light != light || data.pos != pos) {
                     data.light = light
                     flagLightUpdate()
@@ -150,7 +114,7 @@ class ParticleManager {
          * @throws NullPointerException 粒子数据不存在
          */
         fun setPos(particle: Particle, pos: Vec3d) {
-            getData(particle)!!.pos = pos
+            get(particle)!!.pos = pos
         }
 
         /**
@@ -160,27 +124,8 @@ class ParticleManager {
          * @param env 粒子数据
          */
         fun setEnv(particle: Particle, env: ParticleEnv) {
-            getData(particle)?.env = env
+            get(particle)?.env = env
         }
-
-        /**
-         * 将粒子添加到 ID 中
-         *
-         * @param particle 粒子
-         * @param id ID
-         */
-        fun addToId(particle: Particle, id: Long) {
-            val list = ids[id] ?: ConcurrentLinkedQueue()
-            list.add(particle)
-            ids[id] = list
-        }
-
-        /**
-         * 将匹配 ID 的粒子效果全部移除
-         * @param id ID
-         */
-        fun removeId(id: Long) =
-            removeIds.add(id)
 
         /**
          * 获取粒子世界
@@ -189,7 +134,7 @@ class ParticleManager {
          * @return 世界
          */
         fun getWorld(particle: Particle): World? =
-            getData(particle)?.world
+            get(particle)?.world
 
         /**
          * 通过遍历 `lighting` 获取指定坐标经过光照衰减（曼哈顿距离）后的光照强度
@@ -213,10 +158,7 @@ class ParticleManager {
             val mutablePos = acquireMutablePos()
             val tmpPos = acquireMutablePos()
 
-            // 使用预分配数组减少内存分配
-            val particlesArray = particles.toTypedArray()
-
-            for (particle in particlesArray) {
+            for (particle in particles.keys()) {
                 val pos = getPos(particle) ?: continue
                 mutablePos.set(pos.x, pos.y, pos.z)
                 val blockPosLong = mutablePos.asLong()
@@ -295,28 +237,19 @@ class ParticleManager {
          * 粒子管理刻
          */
         fun tick(client: MinecraftClient) {
-            if (tickParticles.isNotEmpty()) {
-                val dataset = tickParticles.pop()
+            if (delayParticles.isNotEmpty()) {
+                val dataset = delayParticles.pop()
                 addParticles(ParticlecoreClient.client, dataset)
             }
             val remove = mutableListOf<Particle>()
-            particleData.forEach { (particle, data) ->
-                data.age --
-                if (data.age <= 0) {
+            particles.forEach { (particle, data) ->
+                if (data.age++ >= data.maxAge) {
                     remove.add(particle)
                     return@forEach
                 }
                 setColor(particle, data.final.color)
             }
-            if (removeIds.isNotEmpty()) {
-                removeIds.forEach { id ->
-                    getParticles(id).forEach {
-                        it.markDead()
-                    }
-                    ids.remove(id)
-                }
-                removeIds.clear()
-            }
+            remove.forEach { removeParticle(it) }
         }
 
         fun setColor(particle: Particle, color: ParticleColor): Boolean {
@@ -343,7 +276,7 @@ class ParticleManager {
 
         private fun addParticles(client: MinecraftClient, particles: List<ParticleSpawnData>) {
             particles.forEach { data ->
-                addParticleInternal(client, data)
+                spawnParticle(client, data)
             }
         }
 
@@ -355,7 +288,7 @@ class ParticleManager {
          * @param client 客户端
          * @param data 粒子召唤数据
          */
-        private fun addParticleInternal(
+        private fun spawnParticle(
             client: MinecraftClient,
             data: ParticleSpawnData,
         ) {
@@ -381,10 +314,9 @@ class ParticleManager {
             particle.maxAge = data.age
             particle.scale(data.scale.toFloat())
 
-            val currentData = ParticleData(
+            val currentData = ParticleStatus(
                 light = -1,
                 pos = pos,
-                id = data.id,
                 env = null,
                 world = client.world,
                 age = data.age,
@@ -392,12 +324,10 @@ class ParticleManager {
                 final = data.final
             )
 
-            particleData[particle] = currentData
-            addToId(particle, data.id)
+            particles[particle] = currentData
 
             val expression = data.expression
             if (expression.isNotEmpty()) {
-                particles.add(particle)
                 val env = ParticleEnv(
                     expression = expression,
                     velocity = velocity,
@@ -425,49 +355,23 @@ class ParticleManager {
          *
          * @param data 粒子数据
          */
-        fun addParticle(data: ParticleSpawnData) {
-            addTickParticle(data, 0)
+        fun spawnParticle(data: ParticleSpawnData) {
+            spawnParticle(data)
         }
 
         /**
-         * 通过标记的 ID 批量移动粒子
-         *
-         * @param id ID
-         * @param vector 向量
-         */
-        fun moveParticle(id: Long, vector: Vec3d) {
-            val particles = ids[id] ?: return
-            for (p in particles) {
-                p.move(vector.x, vector.y, vector.z)
-            }
-        }
-
-        /**
-         * 通过标记的 Id 批量设置粒子向量
-         *
-         * @param id ID
-         * @param vector 向量
-         */
-        fun velocityParticle(id: Long, vector: Vec3d) {
-            val particles = ids[id] ?: return
-            for (p in particles) {
-                p.setVelocity(vector.x, vector.y, vector.z)
-            }
-        }
-
-        /**
-         * 在 `tickAfter` 刻后召唤的粒子效果
+         * 召唤粒子效果，粒子效果会在 `delay` 刻后被生成
          *
          * @param data 粒子效果参数
-         * @param tickAfter 指定刻次数
+         * @param delay 指定刻次数
          */
-        fun addTickParticle(data: ParticleSpawnData, tickAfter: Int) {
-            if (tickParticles.size <= tickAfter) {
-                repeat(tickAfter - tickParticles.size + 1) {
-                    tickParticles.add(mutableListOf())
+        fun spawnParticle(data: ParticleSpawnData, delay: Int = 0) {
+            if (delayParticles.size <= delay) {
+                repeat(delay - delayParticles.size + 1) {
+                    delayParticles.add(mutableListOf())
                 }
             }
-            val particles = tickParticles[tickAfter]
+            val particles = delayParticles[delay]
             // 数量限制
             if (particles.size < MAX_PARTICLES) {
                 particles.add(data)
@@ -477,23 +381,19 @@ class ParticleManager {
         /**
          * 移除所有延时粒子
          */
-        fun clearTickParticles() {
-            tickParticles.forEach { it.clear() }
+        fun clearDelayParticles() {
+            delayParticles.forEach { it.clear() }
         }
 
         fun removeParticle(particle: Particle) {
-            val data = particleData.get(particle) ?: return
+            val data = particles[particle] ?: return
 
             // 更新光照标记
             if (data.light > 0) {
                 posLightUpdate(BlockPos.ofFloored(data.pos))
             }
 
-            // 从所有集合中移除
-            ids[data.id]?.remove(particle)
             particles.remove(particle)
-            particleData.remove(particle)
-
             flagLightUpdate()
         }
     }

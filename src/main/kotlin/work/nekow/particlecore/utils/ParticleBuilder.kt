@@ -47,7 +47,7 @@ class ParticleBuilder {
     var scale: Double = 1.0
     
     companion object {
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleBuilder> = PacketCodec.of<RegistryByteBuf, ParticleBuilder>(
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, ParticleBuilder> = PacketCodec.of(
             { packet, buf ->
                 ParticleTypes.PACKET_CODEC.encode(buf, packet.type)
                 buf.writeVec3d(packet.pos)

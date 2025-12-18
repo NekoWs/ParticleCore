@@ -5,21 +5,20 @@ import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
-import work.nekow.particlecore.utils.ParticleBuilder
 import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
+import work.nekow.particlecore.utils.ParticleBuilder
 
-class PacketFunctionParticlesS2C(
+class FunctionParticlesS2C(
     val particle: ParticleBuilder,
     val function: String,
     val range: Pair<Double, Double>,
     val step: Double,
-    val delay: Double,
-    val id: Long
+    val delay: Double
 ): CustomPayload {
     companion object {
         val ID: Identifier = Identifier.of(MOD_ID, "function_particles")
-        val PAYLOAD_ID = CustomPayload.Id<PacketFunctionParticlesS2C>(ID)
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, PacketFunctionParticlesS2C> = PacketCodec.of<RegistryByteBuf, PacketFunctionParticlesS2C>(
+        val PAYLOAD_ID = CustomPayload.Id<FunctionParticlesS2C>(ID)
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, FunctionParticlesS2C> = PacketCodec.of<RegistryByteBuf, FunctionParticlesS2C>(
             { packet, buf ->
                 ParticleBuilder.PACKET_CODEC.encode(buf, packet.particle)
                 buf.writeString(packet.function)
@@ -27,15 +26,13 @@ class PacketFunctionParticlesS2C(
                 buf.writeDouble(packet.range.second)
                 buf.writeDouble(packet.step)
                 buf.writeDouble(packet.delay)
-                buf.writeLong(packet.id)
             }, { buf ->
-                PacketFunctionParticlesS2C(
+                FunctionParticlesS2C(
                     ParticleBuilder.PACKET_CODEC.decode(buf),
                     buf.readString(),
                     Pair(buf.readDouble(), buf.readDouble()),
                     buf.readDouble(),
-                    buf.readDouble(),
-                    buf.readLong()
+                    buf.readDouble()
                 )
             }
         )

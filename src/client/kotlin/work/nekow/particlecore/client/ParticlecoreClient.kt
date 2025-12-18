@@ -4,9 +4,13 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
-import work.nekow.particlecore.client.listeners.*
+import work.nekow.particlecore.client.listeners.FunctionParticlesHandler
+import work.nekow.particlecore.client.listeners.PacketParticlesHandler
+import work.nekow.particlecore.client.listeners.RemoveTickParticlesHandler
 import work.nekow.particlecore.client.particle.ParticleManager
-import work.nekow.particlecore.network.*
+import work.nekow.particlecore.network.ClearDelayParticlesS2C
+import work.nekow.particlecore.network.FunctionParticlesS2C
+import work.nekow.particlecore.network.ParticlesS2C
 
 class ParticlecoreClient : ClientModInitializer {
     companion object {
@@ -15,22 +19,13 @@ class ParticlecoreClient : ClientModInitializer {
     }
 
     override fun onInitializeClient() {
-        ClientPlayNetworking.registerGlobalReceiver(PacketParticlesS2C.PAYLOAD_ID,
+        ClientPlayNetworking.registerGlobalReceiver(ParticlesS2C.PAYLOAD_ID,
             PacketParticlesHandler()
         )
-        ClientPlayNetworking.registerGlobalReceiver(PacketMarkDeadS2C.PAYLOAD_ID,
-            MarkDeadHandler()
-        )
-        ClientPlayNetworking.registerGlobalReceiver(PacketMoveParticleS2C.PAYLOAD_ID,
-            MoveParticleHandler()
-        )
-        ClientPlayNetworking.registerGlobalReceiver(PacketVelocityParticleS2C.PAYLOAD_ID,
-            VelocityParticleHandler()
-        )
-        ClientPlayNetworking.registerGlobalReceiver(PacketRemoveTickParticlesS2C.PAYLOAD_ID,
+        ClientPlayNetworking.registerGlobalReceiver(ClearDelayParticlesS2C.PAYLOAD_ID,
             RemoveTickParticlesHandler()
         )
-        ClientPlayNetworking.registerGlobalReceiver(PacketFunctionParticlesS2C.PAYLOAD_ID,
+        ClientPlayNetworking.registerGlobalReceiver(FunctionParticlesS2C.PAYLOAD_ID,
             FunctionParticlesHandler()
         )
 

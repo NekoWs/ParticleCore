@@ -59,7 +59,7 @@ public abstract class ParticleMixin {
     public void rotateTick(CallbackInfo ci) {
         var self = (Particle)(Object) this;
         if (rotationData == null) {
-            var data = ParticleManager.Companion.getData(self);
+            var data = ParticleManager.Companion.get(self);
             if (data != null) {
                 rotationData = data.getRotationData();
             }
@@ -89,7 +89,7 @@ public abstract class ParticleMixin {
     public void finalValuesTick(CallbackInfo ci) {
         Particle self = (Particle)(Object) this;
         if (finalValues == null) {
-            var data = ParticleManager.Companion.getData(self);
+            var data = ParticleManager.Companion.get(self);
             if (data != null) {
                 finalValues = data.getFinal();
             } else {

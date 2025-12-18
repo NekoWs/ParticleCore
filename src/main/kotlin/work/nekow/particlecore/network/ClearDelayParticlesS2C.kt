@@ -7,15 +7,15 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import work.nekow.particlecore.ParticleCore.Companion.MOD_ID
 
-class PacketRemoveTickParticlesS2C: CustomPayload {
+class ClearDelayParticlesS2C: CustomPayload {
     companion object {
         val ID: Identifier = Identifier.of(MOD_ID, "remove_tick_particles")
-        val PAYLOAD_ID = CustomPayload.Id<PacketRemoveTickParticlesS2C>(ID)
-        val PACKET_CODEC: PacketCodec<RegistryByteBuf, PacketRemoveTickParticlesS2C> = CustomPayload.codecOf(
+        val PAYLOAD_ID = CustomPayload.Id<ClearDelayParticlesS2C>(ID)
+        val PACKET_CODEC: PacketCodec<RegistryByteBuf, ClearDelayParticlesS2C> = CustomPayload.codecOf(
             { _, _ ->
 
             }, { _ ->
-                PacketRemoveTickParticlesS2C()
+                ClearDelayParticlesS2C()
             }
         )
         fun init() {

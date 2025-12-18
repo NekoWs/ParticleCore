@@ -4,12 +4,12 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import work.nekow.particlecore.client.particle.ParticleManager
 import work.nekow.particlecore.client.particle.ParticleSpawnData
 import work.nekow.particlecore.math.FunctionPoints
-import work.nekow.particlecore.network.PacketFunctionParticlesS2C
+import work.nekow.particlecore.network.FunctionParticlesS2C
 import kotlin.math.floor
 
-class FunctionParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<PacketFunctionParticlesS2C> {
+class FunctionParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<FunctionParticlesS2C> {
     override fun receive(
-        payload: PacketFunctionParticlesS2C,
+        payload: FunctionParticlesS2C,
         context: ClientPlayNetworking.Context
     ) {
         val points = FunctionPoints(
@@ -25,7 +25,7 @@ class FunctionParticlesHandler: ClientPlayNetworking.PlayPayloadHandler<PacketFu
         points.points.forEach { point ->
             val clone = particle.clone()
                 .pos(center.add(point))
-            ParticleManager.addTickParticle(
+            ParticleManager.spawnParticle(
                 ParticleSpawnData.fromBuilder(clone, payload.id),
                 floor(ticks.also { ticks += delay }).toInt(),
             )
