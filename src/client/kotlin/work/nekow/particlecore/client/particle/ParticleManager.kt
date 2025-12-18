@@ -16,7 +16,6 @@ import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
 import work.nekow.particlecore.math.ParticleColor
 import work.nekow.particlecore.utils.ParticleBuilder
 import work.nekow.particlecore.utils.ParticleEnv
-import work.nekow.particlecore.utils.ParticleEnvData
 import work.nekow.particlecore.utils.RotationData
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -224,7 +223,7 @@ class ParticleManager {
          * @param data 粒子数据
          * @return 下一个粒子数据
          */
-        fun particleTick(particle: Particle, data: ParticleEnvData): ParticleEnvData {
+        fun particleTick(particle: Particle, data: ParticleEnv.Data): ParticleEnv.Data {
             val env = getEnv(particle)
             if (env == null || !particle.isAlive) {
                 removeParticle(particle)

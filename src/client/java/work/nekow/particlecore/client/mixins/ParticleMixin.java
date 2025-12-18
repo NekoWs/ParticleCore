@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import work.nekow.particlecore.client.particle.ParticleManager;
 import work.nekow.particlecore.utils.FinalValues;
-import work.nekow.particlecore.utils.ParticleEnvData;
+import work.nekow.particlecore.utils.ParticleEnv;
 import work.nekow.particlecore.utils.RotationData;
 
 import java.util.ArrayList;
@@ -113,9 +113,9 @@ public abstract class ParticleMixin {
             return;
         }
 
-        ParticleEnvData data = ParticleManager.Companion.particleTick(
+        var data = ParticleManager.Companion.particleTick(
             self,
-            new ParticleEnvData(
+            new ParticleEnv.Data(
                 new Vec3d(velocityX, velocityY, velocityZ),
                 new Vec3d(x, y, z),
                 red, green, blue, alpha, angle,
@@ -129,14 +129,14 @@ public abstract class ParticleMixin {
         }
     }
 
-    @Inject(method = "markDead", at = @At("TAIL"))
+    @Inject(method = "markDead", at = @At("HEAD"))
     public void markDead(CallbackInfo ci) {
         Particle self = (Particle)(Object) this;
         ParticleManager.Companion.removeParticle(self);
     }
 
     @Unique
-    public void setData(ParticleEnvData data, String prefix) {
+    public void setData(ParticleEnv.Data data, String prefix) {
         Particle self = (Particle)(Object) this;
         Vec3d velocity = data.getVelocity();
         Vec3d position = data.getPosition();

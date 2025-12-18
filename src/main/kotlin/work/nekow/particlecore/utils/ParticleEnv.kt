@@ -18,17 +18,70 @@ data class ParticleEnv(
     val arguments: HashMap<String, EvaluationValue> = HashMap(),
     val age: Int
 ) {
+    data class Data(
+        var velocity: Vec3d = Vec3d.ZERO,
+        var position: Vec3d = Vec3d.ZERO,
+        var red: Float = 1F,
+        var green: Float = 1F,
+        var blue: Float = 1F,
+        var alpha: Float = 1F,
+        var angle: Float = 0F,
+        var prefix: ArrayList<String> = ArrayList(),
+        var light: Int = -1,
+        var gravity: Float = 0F,
+        var scale: Float = 1F,
+        var vm: Float = 1F
+    ) {
+        fun clone(): Data {
+            return Data(
+                velocity = velocity,
+                position = position,
+                red = red,
+                green = green,
+                blue = blue,
+                alpha = alpha,
+                angle = angle,
+                prefix = arrayListOf(*prefix.toTypedArray()),
+                light = light,
+                gravity = gravity,
+                scale = scale,
+            )
+        }
+    }
+
+    data class Env(
+        val expression: String,
+        val arguments: HashMap<String, EvaluationValue>,
+        val age: Int
+    ) {
+        override fun hashCode(): Int {
+            var result = expression.hashCode()
+            result = 31 * result + arguments.hashCode()
+            result = 31 * result + age
+            return result
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other !is Env) return false
+
+            return expression == other.expression &&
+                    arguments == other.arguments &&
+                    age == other.age
+        }
+    }
+
     val exps: List<Pair<Expression?, List<Pair<String, Expression>>>> by lazy {
         if (expression.isEmpty()) emptyList() else parseExpressionWithCache(expression)
     }
 
-    val results = HashMap<Int, ParticleEnvData>()
+    val results = HashMap<Int, Data>()
 
     init {
         offset = offset.scale(SCALE_PRECISION)
         center = center.scale(SCALE_PRECISION)
 
-        val data = EnvData(expression, arguments, age)
+        val data = Env(expression, arguments, age)
         caches[data]?.let { cachedResults ->
             results.putAll(cachedResults)
         } ?: run {
@@ -41,7 +94,7 @@ data class ParticleEnv(
     }
 
     fun initParticleData() {
-        var abstractData = ParticleEnvData(
+        var abstractData = Data(
             position = Vec3d.ZERO,
             velocity = velocity
         )
@@ -71,18 +124,18 @@ data class ParticleEnv(
         }
     }
 
-    fun current(): ParticleEnvData {
-        return results[ticks] ?: ParticleEnvData()
+    fun current(): Data {
+        return results[ticks] ?: Data()
     }
 
-    fun next(): ParticleEnvData {
+    fun next(): Data {
         return current().also { ticks++ }
     }
 
     companion object {
         private val caches = Collections.synchronizedMap(
-            object : LinkedHashMap<EnvData, HashMap<Int, ParticleEnvData>>(16, 0.75f, true) {
-                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<EnvData, HashMap<Int, ParticleEnvData>>): Boolean {
+            object : LinkedHashMap<Env, HashMap<Int, Data>>(16, 0.75f, true) {
+                override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Env, HashMap<Int, Data>>): Boolean {
                     return size > MAX_CACHE_SIZE
                 }
             }
@@ -102,7 +155,7 @@ data class ParticleEnv(
         fun updateData(
             prefix: String,
             value: EvaluationValue,
-            data: ParticleEnvData,
+            data: Data,
             arguments: HashMap<String, EvaluationValue>
         ) {
             when (prefix) {
@@ -136,7 +189,7 @@ data class ParticleEnv(
          */
         fun getValues(
             map: HashMap<String, EvaluationValue>,
-            data: ParticleEnvData,
+            data: Data,
             ticks: Int
         ) {
             map.clear()

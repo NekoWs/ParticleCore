@@ -65,8 +65,8 @@ data class FinalValues(
         )
     }
 
-    fun toEnvData(): ParticleEnvData {
-        return ParticleEnvData(
+    fun toEnvData(): ParticleEnv.Data {
+        return ParticleEnv.Data(
             velocity = velocity,
             red = color.red,
             green = color.green,
