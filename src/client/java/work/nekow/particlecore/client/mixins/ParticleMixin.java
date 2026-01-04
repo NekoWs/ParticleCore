@@ -64,7 +64,9 @@ public abstract class ParticleMixin {
                 rotationData = data.getRotationData();
             }
         }
-        if (rotationData == null) return;
+        if (rotationData == null) {
+            return;
+        }
         var rotation = rotationData.getRotation();
         var quat = rotation.getQuat();
         if (quat.equals(new Quaternionf())) {

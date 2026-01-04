@@ -3,7 +3,7 @@ package work.nekow.particlecore.utils
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.util.math.Vec3d
-import work.nekow.particlecore.math.ParticleColor
+import work.nekow.particlecore.utils.ParticleColor
 
 @Suppress("unused")
 data class FinalValues(

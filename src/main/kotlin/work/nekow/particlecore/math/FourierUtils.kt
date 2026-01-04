@@ -5,21 +5,26 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class FourierUtils {
-    data class FourierConfig(
-        val terms: List<FourierTerm>,
+    data class Config(
+        val terms: List<Term>,
         val duration: Double, val
         timeStep: Double,
         val scale: Double
     )
+    data class Term(
+        val radius: Number,
+        val speed: Number,
+        val rotate: Number
+    )
     companion object {
-        val caches = HashMap<FourierConfig, List<Vector2d>>()
+        val caches = HashMap<Config, List<Vector2d>>()
 
         /**
          * 计算傅里叶位置
          * @param terms 傅里叶项
          * @param time 时间
          */
-        fun computeFourier(terms: List<FourierTerm>, time: Double, scale: Double): Vector2d {
+        fun computeFourier(terms: List<Term>, time: Double, scale: Double): Vector2d {
             var x = 0.0
             var y = 0.0
             for (term in terms) {
@@ -36,8 +41,8 @@ class FourierUtils {
          * @param duration 最大时间
          * @param timeStep 时间跨度
          */
-        fun fourierPoints(terms: List<FourierTerm>, duration: Double, timeStep: Double, scale: Double = 1.0): List<Vector2d> {
-            val config = FourierConfig(terms, duration, timeStep, scale)
+        fun fourierPoints(terms: List<Term>, duration: Double, timeStep: Double, scale: Double = 1.0): List<Vector2d> {
+            val config = Config(terms, duration, timeStep, scale)
             if (caches.containsKey(config)) {
                 return caches[config]!!
             }

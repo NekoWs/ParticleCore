@@ -13,7 +13,7 @@ import org.joml.Matrix4f
 import work.nekow.particlecore.client.ParticlecoreClient
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.MAX_PARTICLES
 import work.nekow.particlecore.client.ParticlecoreClient.Companion.client
-import work.nekow.particlecore.math.ParticleColor
+import work.nekow.particlecore.utils.ParticleColor
 import work.nekow.particlecore.utils.ParticleBuilder
 import work.nekow.particlecore.utils.ParticleEnv
 import work.nekow.particlecore.utils.RotationData

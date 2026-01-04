@@ -12,7 +12,6 @@ import net.minecraft.util.Colors
 import net.minecraft.util.math.Vec3d
 import org.joml.Quaternionf
 import work.nekow.particlecore.ParticleCore.Companion.getVec3d
-import work.nekow.particlecore.math.ParticleColor
 import kotlin.jvm.optionals.getOrDefault
 
 /**
